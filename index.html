@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMAPSI — Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-logo">Gallery</div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  <div class="loader-text">Memuat koleksi foto</div>
+</div>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="0.8">
+      <path d="M1 1l12 12M13 1L1 13"/>
+    </svg>
+    Tutup
+  </button>
+  <div class="lightbox-content">
+    <span>Foto kegiatan sekolah</span>
+  </div>
+  <div class="lightbox-info">
+    <div class="lightbox-cat" id="lightboxCat">Kegiatan</div>
+    <div class="lightbox-title" id="lightboxTitle">Nama Kegiatan</div>
+  </div>
+</div>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 14 14" fill="none">
+        <rect x="1" y="1" width="5" height="5" rx="1" fill="rgba(240,239,233,0.7)"/>
+        <rect x="8" y="1" width="5" height="5" rx="1" fill="rgba(240,239,233,0.45)"/>
+        <rect x="1" y="8" width="5" height="5" rx="1" fill="rgba(240,239,233,0.45)"/>
+        <rect x="8" y="8" width="5" height="5" rx="1" fill="rgba(240,239,233,0.2)"/>
+      </svg>
+    </div>
+    SMAPSI <span>/ Gallery</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#hero" class="active">Beranda</a></li>
+    <li><a href="#gallery">Galeri</a></li>
+    <li><a href="#kegiatan">Kegiatan</a></li>
+    <li><a href="#gate">Tentang</a></li>
+  </ul>
+
+  <a href="#gate" class="nav-cta">Masuk</a>
+
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="nav-drawer-overlay" id="drawerOverlay"></div>
+<div class="nav-drawer" id="drawer">
+  <a href="#hero" class="active">Beranda</a>
+  <a href="#gallery">Galeri</a>
+  <a href="#kegiatan">Kegiatan</a>
+  <a href="#gate">Tentang</a>
+  <a href="#gate" class="drawer-cta">Masuk Sekarang</a>
+</div>
+
+<!-- ══════════════════════════════
+     HERO
+══════════════════════════════ -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-grid"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">Dokumentasi Kegiatan Sekolah</span>
+    </div>
+    <h1 class="hero-title">
+      Setiap Momen
+      <em class="hero-title-italic">Layak Dikenang</em>
+    </h1>
+    <p class="hero-sub">Arsip foto resmi kegiatan siswa dan sekolah. Sederhana, terorganisir, dan abadi untuk semua generasi.</p>
+    <div class="hero-actions">
+      <a href="#gallery" class="btn-primary">Lihat Galeri</a>
+      <a href="#kegiatan" class="btn-ghost">Kegiatan terkini</a>
+    </div>
+  </div>
+
+  <div class="hero-images">
+    <div class="hero-img" data-cat="Wisuda" data-title="Wisuda Angkatan 2024">
+      <div class="img-overlay"></div>
+      <div class="img-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(240,239,233,0.6)" stroke-width="0.8">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>
+      </div>
+      <div class="img-label">Wisuda · 2024</div>
+    </div>
+    <div class="hero-img" data-cat="OSIS" data-title="Pelantikan OSIS 2024">
+      <div class="img-overlay"></div>
+      <div class="img-label">OSIS · 2024</div>
+    </div>
+    <div class="hero-img" data-cat="Study Tour" data-title="Study Tour Yogyakarta">
+      <div class="img-overlay"></div>
+      <div class="img-label">Study Tour</div>
+    </div>
+  </div>
+
+  <div class="stats-strip">
+    <div class="stat-item reveal">
+      <div class="stat-num" data-count="2400">0</div>
+      <div class="stat-label">Total Foto</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-num" data-count="48">0</div>
+      <div class="stat-label">Kegiatan</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-num" data-count="12">0</div>
+      <div class="stat-label">Kategori</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <div class="stat-num" data-count="2024">0</div>
+      <div class="stat-label">Tahun Ajaran</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════
+     GALLERY
+══════════════════════════════ -->
+<section id="gallery">
+  <div class="sect-head reveal">
+    <span class="sect-num">01</span>
+    <span class="sect-title">Foto Terpilih</span>
+    <div class="sect-line"></div>
+    <a href="#" class="sect-action">Lihat semua</a>
+  </div>
+
+  <div class="filter-row reveal reveal-delay-1">
+    <button class="filter-btn active" data-filter="all">Semua</button>
+    <button class="filter-btn" data-filter="osis">OSIS</button>
+    <button class="filter-btn" data-filter="olahraga">Olahraga</button>
+    <button class="filter-btn" data-filter="seni">Seni Budaya</button>
+    <button class="filter-btn" data-filter="wisuda">Wisuda</button>
+    <button class="filter-btn" data-filter="tour">Study Tour</button>
+    <button class="filter-btn" data-filter="lomba">Lomba</button>
+  </div>
+
+  <div class="masonry-grid reveal">
+    <div class="m-item" data-category="wisuda" data-title="Wisuda Angkatan 2024" data-cat-label="Wisuda">
+      <div class="photo-art">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+          <circle cx="20" cy="14" r="8"/><path d="M4 36c0-8.84 7.16-16 16-16s16 7.16 16 16"/>
+        </svg>
+      </div>
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Angkatan 2024 · 248 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="osis" data-title="Pelantikan OSIS 2024" data-cat-label="OSIS">
+      <div class="photo-art">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+          <path d="M18 3l4 8 9 1.3-6.5 6.3 1.5 9L18 23l-8 4.6 1.5-9L5 12.3 14 11z"/>
+        </svg>
+      </div>
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pelantikan · 64 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="tour" data-title="Study Tour Yogyakarta" data-cat-label="Study Tour">
+      <div class="photo-art">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+          <path d="M18 3C11 3 6 9 6 16c0 10 12 17 12 17s12-7 12-17c0-7-5-13-12-13z"/>
+          <circle cx="18" cy="16" r="4"/>
+        </svg>
+      </div>
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Study Tour</span><div class="m-item-label">Yogyakarta · 201 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="olahraga" data-title="Turnamen Futsal 2024" data-cat-label="Olahraga">
+      <div class="photo-art">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+          <circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="5"/>
+          <path d="M16 4v5M16 23v5M4 16h5M23 16h5"/>
+        </svg>
+      </div>
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Futsal · 92 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="seni" data-title="Pagelaran Seni Akhir Tahun" data-cat-label="Seni Budaya">
+      <div class="photo-art">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+          <path d="M18 6c-3 0-12 9-12 18h24C30 15 21 6 18 6z"/>
+          <path d="M18 18v6M14 20h8"/>
+        </svg>
+      </div>
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Seni</span><div class="m-item-label">Pagelaran · 134 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="lomba" data-title="Olimpiade Sains Nasional" data-cat-label="Lomba">
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Lomba</span><div class="m-item-label">OSN · 86 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="osis" data-title="Pensi OSIS 2024" data-cat-label="OSIS">
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pensi · 178 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="wisuda" data-title="Perpisahan Kelas XII" data-cat-label="Wisuda">
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Perpisahan · 96 foto</div></div>
+      </div>
+    </div>
+    <div class="m-item" data-category="olahraga" data-title="Class Meeting 2024" data-cat-label="Olahraga">
+      <div class="m-item-inner">
+        <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Class Meeting · 113 foto</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════
+     KEGIATAN
+══════════════════════════════ -->
+<section id="kegiatan">
+  <div class="sect-head reveal">
+    <span class="sect-num">02</span>
+    <span class="sect-title">Kegiatan Terkini</span>
+    <div class="sect-line"></div>
+  </div>
+
+  <div class="featured-layout">
+    <div class="reveal">
+      <div class="featured-tag">Unggulan</div>
+      <h2 class="featured-title">
+        Wisuda<br>
+        <em>Angkatan 2024</em>
+      </h2>
+      <p class="featured-desc">Upacara kelulusan yang menandai babak baru bagi 312 siswa angkatan 2024. Diabadikan dalam 248 foto pilihan oleh tim dokumentasi sekolah.</p>
+      <a href="#" class="feat-view-link">Lihat koleksi lengkap</a>
+
+      <div class="event-list">
+        <div class="event-item">
+          <span class="event-num">02</span>
+          <span class="event-cat">Lomba</span>
+          <span class="event-name">Olimpiade Sains Nasional</span>
+          <span class="event-count">86 foto</span>
+        </div>
+        <div class="event-item">
+          <span class="event-num">03</span>
+          <span class="event-cat">Seni Budaya</span>
+          <span class="event-name">Pagelaran Seni Akhir Tahun</span>
+          <span class="event-count">134 foto</span>
+        </div>
+        <div class="event-item">
+          <span class="event-num">04</span>
+          <span class="event-cat">Study Tour</span>
+          <span class="event-name">Kunjungan Edukatif Yogyakarta</span>
+          <span class="event-count">201 foto</span>
+        </div>
+        <div class="event-item">
+          <span class="event-num">05</span>
+          <span class="event-cat">Olahraga</span>
+          <span class="event-name">Class Meeting Semester Ganjil</span>
+          <span class="event-count">113 foto</span>
+        </div>
+        <div class="event-item">
+          <span class="event-num">06</span>
+          <span class="event-cat">OSIS</span>
+          <span class="event-name">Pensi & Pekan Seni OSIS</span>
+          <span class="event-count">178 foto</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="featured-imgs reveal reveal-delay-2">
+      <div class="feat-img-big" data-cat="Wisuda" data-title="Wisuda Angkatan 2024">
+        <div class="photo-art" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.06;">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
+            <circle cx="30" cy="22" r="12"/>
+            <path d="M6 54c0-13.25 10.75-24 24-24s24 10.75 24 24"/>
+          </svg>
+        </div>
+      </div>
+      <div class="feat-img-sm" data-cat="Lomba" data-title="Olimpiade Sains Nasional"></div>
+      <div class="feat-img-sm" data-cat="Seni" data-title="Pagelaran Seni Akhir Tahun"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════
+     LOGIN GATE
+══════════════════════════════ -->
+<div id="gate">
+  <div class="gate-bg"></div>
+  <div class="reveal">
+    <div class="gate-pre">Akses Anggota</div>
+    <h2 class="gate-title">
+      Koleksi lengkap<br>
+      <em>untuk warga sekolah</em>
+    </h2>
+    <p class="gate-sub">Masuk dengan akun sekolah untuk mengakses seluruh arsip foto yang dikelompokkan per kegiatan dan tahun ajaran. Tersedia fitur unduh foto resolusi tinggi.</p>
+  </div>
+  <div class="gate-right reveal reveal-delay-2">
+    <a href="#" class="gate-btn">Masuk Sekarang</a>
+    <span class="gate-note">Belum punya akun? Hubungi admin sekolah</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     FOOTER
+══════════════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="reveal">
+      <div class="footer-brand">SMAPSI / Gallery</div>
+      <p class="footer-desc">Arsip dokumentasi resmi kegiatan sekolah. Kenangan yang terorganisir dengan baik untuk siswa, guru, dan keluarga.</p>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <div class="footer-col-title">Navigasi</div>
+      <div class="footer-links">
+        <a href="#hero">Beranda</a>
+        <a href="#gallery">Galeri</a>
+        <a href="#kegiatan">Kegiatan</a>
+        <a href="#gate">Tentang</a>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <div class="footer-col-title">Kontak</div>
+      <div class="footer-links">
+        <a href="mailto:admin@smanx.sch.id">admin@smanx.sch.id</a>
+        <a href="tel:02100000000">(021) 000-0000</a>
+        <a href="#">Jakarta, Indonesia</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2024 SMA Plus Sirojussyafi'iyyah. All rights reserved.</span>
+    <span class="footer-copy">Kebijakan Privasi · Syarat Layanan</span>
+  </div>
+
+  <div class="supported-bar">
+    <span class="sup-label">Supported by</span>
+    <div class="sup-divider"></div>
+    <a href="#" class="sup-logo">
+      <div class="sup-logo-icon">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <rect x="1" y="1" width="4.5" height="4.5" rx="1" fill="#555"/>
+          <rect x="6.5" y="1" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.65"/>
+          <rect x="1" y="6.5" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.65"/>
+          <rect x="6.5" y="6.5" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.35"/>
+        </svg>
+      </div>
+      <div class="sup-logo-name">Nama<span>Studio</span></div>
+    </a>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════
+   PAGE LOADER
+═══════════════════════════════════════════════ */
+const loader = document.getElementById('loader');
+const loaderBar = document.getElementById('loaderBar');
+
+window.addEventListener('load', () => {
+  setTimeout(() => { loaderBar.style.width = '100%'; }, 100);
+  setTimeout(() => {
+    loader.classList.add('hidden');
+    document.body.style.overflow = '';
+  }, 1800);
+});
+document.body.style.overflow = 'hidden';
+
+/* ═══════════════════════════════════════════════
+   CUSTOM CURSOR
+═══════════════════════════════════════════════ */
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let mouseX = 0, mouseY = 0;
+let ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursor.style.left = mouseX + 'px';
+  cursor.style.top  = mouseY + 'px';
+});
+
+function animateRing() {
+  ringX += (mouseX - ringX) * 0.12;
+  ringY += (mouseY - ringY) * 0.12;
+  cursorRing.style.left = ringX + 'px';
+  cursorRing.style.top  = ringY + 'px';
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+
+document.querySelectorAll('a, button, .m-item, .hero-img, .feat-img-big, .feat-img-sm, .event-item').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('expanded'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('expanded'));
+});
+
+/* ═══════════════════════════════════════════════
+   SCROLL PROGRESS + NAV
+═══════════════════════════════════════════════ */
+const navbar = document.getElementById('navbar');
+const scrollProgress = document.getElementById('scrollProgress');
+const sections = document.querySelectorAll('section[id], div[id="gate"]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.body.scrollHeight - window.innerHeight;
+  scrollProgress.style.width = (scrolled / total * 100) + '%';
+
+  // Navbar scrolled state
+  navbar.classList.toggle('scrolled', scrolled > 60);
+
+  // Active nav link
+  let current = '';
+  sections.forEach(s => {
+    if (scrolled >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+
+  // Trigger reveals
+  revealOnScroll();
+});
+
+/* ═══════════════════════════════════════════════
+   REVEAL ON SCROLL
+═══════════════════════════════════════════════ */
+const reveals = document.querySelectorAll('.reveal');
+function revealOnScroll() {
+  reveals.forEach(el => {
+    const top = el.getBoundingClientRect().top;
+    if (top < window.innerHeight - 80) el.classList.add('visible');
+  });
+}
+revealOnScroll();
+
+/* ═══════════════════════════════════════════════
+   COUNT UP ANIMATION
+═══════════════════════════════════════════════ */
+function animateCount(el, target) {
+  const duration = 1800;
+  const start = performance.now();
+  const startVal = 0;
+
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    const val = Math.round(startVal + (target - startVal) * ease);
+    el.textContent = target >= 1000 ? val.toLocaleString('id') + '+' : val;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+const statNums = document.querySelectorAll('.stat-num[data-count]');
+const countObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.dataset.counted) {
+      entry.target.dataset.counted = true;
+      animateCount(entry.target, parseInt(entry.target.dataset.count));
+    }
+  });
+}, { threshold: 0.5 });
+statNums.forEach(el => countObserver.observe(el));
+
+/* ═══════════════════════════════════════════════
+   HAMBURGER + DRAWER
+═══════════════════════════════════════════════ */
+const hamburger = document.getElementById('hamburger');
+const drawer = document.getElementById('drawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+
+function openDrawer() {
+  hamburger.classList.add('open');
+  drawer.classList.add('open');
+  drawerOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  hamburger.classList.remove('open');
+  drawer.classList.remove('open');
+  drawerOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+hamburger.addEventListener('click', () => {
+  drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+});
+drawerOverlay.addEventListener('click', closeDrawer);
+drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+
+/* ═══════════════════════════════════════════════
+   GALLERY FILTER
+═══════════════════════════════════════════════ */
+const filterBtns = document.querySelectorAll('.filter-btn');
+const mItems = document.querySelectorAll('.m-item');
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const filter = btn.dataset.filter;
+    mItems.forEach((item, i) => {
+      const match = filter === 'all' || item.dataset.category === filter;
+      setTimeout(() => {
+        item.classList.toggle('hidden', !match);
+      }, i * 30);
+    });
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   LIGHTBOX
+═══════════════════════════════════════════════ */
+const lightbox = document.getElementById('lightbox');
+const lightboxClose = document.getElementById('lightboxClose');
+const lightboxCat = document.getElementById('lightboxCat');
+const lightboxTitle = document.getElementById('lightboxTitle');
+
+function openLightbox(cat, title) {
+  lightboxCat.textContent = cat;
+  lightboxTitle.textContent = title;
+  lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  lightbox.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.m-item, .hero-img, .feat-img-big').forEach(el => {
+  el.addEventListener('click', () => {
+    const cat = el.dataset.cat || el.dataset.catLabel || 'Kegiatan';
+    const title = el.dataset.title || 'Foto Kegiatan';
+    openLightbox(cat, title);
+  });
+});
+lightboxClose.addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ═══════════════════════════════════════════════
+   SMOOTH SCROLL
+═══════════════════════════════════════════════ */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    const offset = target.offsetTop - 60;
+    window.scrollTo({ top: offset, behavior: 'smooth' });
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   HERO IMAGE PARALLAX (desktop only)
+═══════════════════════════════════════════════ */
+if (window.innerWidth > 768) {
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    document.querySelectorAll('.hero-img').forEach((img, i) => {
+      img.style.transform = `translateY(${scrollY * (0.04 + i * 0.02)}px)`;
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   MASONRY ITEM STAGGER ON LOAD
+═══════════════════════════════════════════════ */
+const masonryObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const items = entry.target.querySelectorAll('.m-item');
+      items.forEach((item, i) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(16px)';
+        setTimeout(() => {
+          item.style.transition = 'opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1)';
+          item.style.opacity = '1';
+          item.style.transform = 'none';
+        }, i * 60);
+      });
+      masonryObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+const grid = document.querySelector('.masonry-grid');
+if (grid) masonryObserver.observe(grid);
+
+/* ═══════════════════════════════════════════════
+   EVENT ITEM HOVER SOUND EFFECT (subtle)
+═══════════════════════════════════════════════ */
+document.querySelectorAll('.event-item').forEach(item => {
+  item.addEventListener('mouseenter', () => {
+    item.style.transition = 'all 0.3s cubic-bezier(0.16,1,0.3,1)';
+  });
+});
+</script>
+</body>
+</html>
