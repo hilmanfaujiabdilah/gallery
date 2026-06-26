@@ -137,6 +137,13 @@ nav.scrolled {
   align-items: center;
   gap: 10px;
 }
+
+.nav-logo-img {
+  height: 28px;        /* sesuaikan ukuran logo */
+  width: auto;         /* jaga aspek rasio */
+  object-fit: contain;
+}
+
 .nav-logo-mark {
   width: 28px; height: 28px;
   border: 0.5px solid var(--border2);
@@ -286,7 +293,7 @@ nav.scrolled {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 100px 48px 60px;
+  padding: 70px 48px 60px;
   gap: 40px;
   position: relative;
   overflow: hidden;
@@ -428,19 +435,23 @@ nav.scrolled {
   transform: translateX(30px);
   animation: fadeLeft 1s var(--ease-out) 0.5s forwards;
 }
+/* SESUDAH */
 .hero-img {
   border-radius: 2px;
-  background: var(--surface);
+  background-color: var(--surface); /* ← pakai background-color, bukan background */
+  background-size: cover;           /* ← TAMBAH INI */
+  background-position: center;      /* ← TAMBAH INI */
+  background-repeat: no-repeat;     /* ← TAMBAH INI */
   position: relative;
   overflow: hidden;
   cursor: pointer;
 }
 .hero-img:nth-child(1) {
   grid-row: span 2;
-  background: var(--card);
+  background-color: var(--card);    /* ← pakai background-color */
 }
-.hero-img:nth-child(2) { background: #161616; }
-.hero-img:nth-child(3) { background: #1c1c1c; }
+.hero-img:nth-child(2) { background-color: #161616; }  /* ← sama */
+.hero-img:nth-child(3) { background-color: #1c1c1c; }  /* ← sama */
 
 /* Photo placeholders with subtle shimmer */
 .hero-img::before {
@@ -825,15 +836,22 @@ section {
 }
 .feat-img-big {
   grid-row: span 2;
-  background: var(--card);
+  background-color: var(--card);   /* ← ganti background → background-color */
+  background-size: cover;           /* ← tambah */
+  background-position: center;      /* ← tambah */
+  background-repeat: no-repeat;     /* ← tambah */
   border-radius: 2px;
   min-height: 280px;
   position: relative;
   overflow: hidden;
   cursor: pointer;
 }
+
 .feat-img-sm {
-  background: var(--surface);
+  background-color: var(--surface); /* ← ganti background → background-color */
+  background-size: cover;            /* ← tambah */
+  background-position: center;       /* ← tambah */
+  background-repeat: no-repeat;      /* ← tambah */
   border-radius: 2px;
   min-height: 136px;
   position: relative;
@@ -1042,6 +1060,17 @@ footer {
   color: var(--muted2);
 }
 .sup-logo-name span { color: var(--muted3); }
+
+.sup-logo-img {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.6;           /* sesuaikan dengan gaya footer yang subtle */
+  transition: opacity 0.3s;
+}
+.sup-logo:hover .sup-logo-img {
+  opacity: 1;             /* terang saat hover */
+}
 
 /* ═══════════════════════════════════════════════
    LIGHTBOX

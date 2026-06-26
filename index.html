@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SMAPSI — Gallery</title>
+<link rel="icon" type="image/png" href="assets/logo osis.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -47,14 +48,7 @@
 <!-- NAVIGATION -->
 <nav id="navbar">
   <a href="#" class="nav-logo">
-    <div class="nav-logo-mark">
-      <svg viewBox="0 0 14 14" fill="none">
-        <rect x="1" y="1" width="5" height="5" rx="1" fill="rgba(240,239,233,0.7)"/>
-        <rect x="8" y="1" width="5" height="5" rx="1" fill="rgba(240,239,233,0.45)"/>
-        <rect x="1" y="8" width="5" height="5" rx="1" fill="rgba(240,239,233,0.45)"/>
-        <rect x="8" y="8" width="5" height="5" rx="1" fill="rgba(240,239,233,0.2)"/>
-      </svg>
-    </div>
+    <img src="assets/logo osis.png" alt="Logo SMAPSI" class="nav-logo-img">
     SMAPSI <span>/ Gallery</span>
   </a>
 
@@ -107,22 +101,22 @@
   </div>
 
   <div class="hero-images">
-    <div class="hero-img" data-cat="Wisuda" data-title="Wisuda Angkatan 2024">
+    <div class="hero-img" data-cat="OSIS" data-title="OSIS Angkatan 2022" style="background-image: url('assets/heroimages-osis.jpg');">
       <div class="img-overlay"></div>
       <div class="img-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(240,239,233,0.6)" stroke-width="0.8">
           <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
         </svg>
       </div>
-      <div class="img-label">Wisuda · 2024</div>
+      <div class="img-label">OSIS · 2022</div>
     </div>
-    <div class="hero-img" data-cat="OSIS" data-title="Pelantikan OSIS 2024">
+    <div class="hero-img" data-cat="Seni Tari" data-title="Seni Tari 2022" style="background-image: url('assets/heroimages-tari.jpg');">
       <div class="img-overlay"></div>
-      <div class="img-label">OSIS · 2024</div>
+      <div class="img-label">Seni Tari · 2022</div>
     </div>
-    <div class="hero-img" data-cat="Study Tour" data-title="Study Tour Yogyakarta">
+    <div class="hero-img" data-cat="Teman Perpus" data-title="Teman Perpus 2023" style="background-image: url('assets/heroimages-perpus.jpg');">
       <div class="img-overlay"></div>
-      <div class="img-label">Study Tour</div>
+      <div class="img-label">Teman Perpus · 2023</div>
     </div>
   </div>
 
@@ -140,7 +134,7 @@
       <div class="stat-label">Kategori</div>
     </div>
     <div class="stat-item reveal reveal-delay-3">
-      <div class="stat-num" data-count="2024">0</div>
+      <div class="stat-num" data-count="13">0</div>
       <div class="stat-label">Tahun Ajaran</div>
     </div>
   </div>
@@ -299,16 +293,31 @@
     </div>
 
     <div class="featured-imgs reveal reveal-delay-2">
-      <div class="feat-img-big" data-cat="Wisuda" data-title="Wisuda Angkatan 2024">
-        <div class="photo-art" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0.06;">
-          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-            <circle cx="30" cy="22" r="12"/>
-            <path d="M6 54c0-13.25 10.75-24 24-24s24 10.75 24 24"/>
-          </svg>
-        </div>
+
+      <!-- Foto besar (sudah ada) -->
+      <div class="feat-img-big" 
+          data-cat="Wisuda" 
+          data-title="Wisuda Angkatan 2024"
+          data-img="assets/wisuda-kelas12.jpg"
+          style="background-image: url('assets/wisuda-kelas12.jpg');">
       </div>
-      <div class="feat-img-sm" data-cat="Lomba" data-title="Olimpiade Sains Nasional"></div>
-      <div class="feat-img-sm" data-cat="Seni" data-title="Pagelaran Seni Akhir Tahun"></div>
+
+      <!-- Foto kecil kanan atas → wisuda-juara -->
+      <div class="feat-img-sm" 
+          data-cat="Lomba" 
+          data-title="Olimpiade Sains Nasional"
+          data-img="assets/wisuda-juara.jpg"
+          style="background-image: url('assets/wisuda-juara.jpg');">
+      </div>
+
+      <!-- Foto kecil kanan bawah → wisuda-all -->
+      <div class="feat-img-sm" 
+          data-cat="Seni" 
+          data-title="Pagelaran Seni Akhir Tahun"
+          data-img="assets/wisuda-all.JPG"
+          style="background-image: url('assets/wisuda-all.JPG');">
+      </div>
+
     </div>
   </div>
 </section>
@@ -366,18 +375,11 @@
   </div>
 
   <div class="supported-bar">
-    <span class="sup-label">Supported by</span>
+    <span class="sup-label">Powered by</span>
     <div class="sup-divider"></div>
     <a href="#" class="sup-logo">
-      <div class="sup-logo-icon">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <rect x="1" y="1" width="4.5" height="4.5" rx="1" fill="#555"/>
-          <rect x="6.5" y="1" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.65"/>
-          <rect x="1" y="6.5" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.65"/>
-          <rect x="6.5" y="6.5" width="4.5" height="4.5" rx="1" fill="#555" opacity="0.35"/>
-        </svg>
-      </div>
-      <div class="sup-logo-name">Nama<span>Studio</span></div>
+      <img src="assets/logo niits.png" alt="Niits" class="sup-logo-img">
+      <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
     </a>
   </div>
 </footer>
