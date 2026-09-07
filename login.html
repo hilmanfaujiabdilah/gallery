@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — Gallery</title>
+<link rel="icon" type="image/png" href="assets/logo osis.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth-service.js"></script>
+<script src="js/popup.js"></script>
+<style>
+  html, body {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Mencegah scrollbar pada laptop / desktop */
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--black);
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  /* Container Login */
+  .login-wrapper {
+    width: 100%;
+    max-width: 860px;
+    height: min(500px, 85vh); /* Pas di layar laptop tanpa scroll */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--deep);
+    border: 0.5px solid var(--border2);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.85);
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Sisi Kiri (Foto) — Khusus Laptop / Desktop */
+  .login-visual {
+    position: relative;
+    background-image: url('assets/heroimages-osis.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 24px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .login-visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(12,12,13,0.35) 0%, rgba(12,12,13,0.88) 100%);
+  }
+
+  .login-visual-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--white);
+    font-family: var(--serif);
+    font-size: 18px;
+  }
+
+  .login-logo img {
+    height: 28px;
+    width: auto;
+  }
+
+  .login-quote {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2px;
+  }
+
+  .login-quote-title {
+    font-family: var(--serif);
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .login-quote-sub {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--muted2);
+    letter-spacing: 0.08em;
+  }
+
+  /* Sisi Kanan (Formulir) */
+  .login-form-side {
+    padding: 32px 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--deep);
+  }
+
+  .login-header {
+    margin-bottom: 20px;
+  }
+
+  .login-pre {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 4px;
+  }
+
+  .login-title {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .login-sub {
+    font-size: 12px;
+    color: var(--muted3);
+    line-height: 1.4;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 6px;
+  }
+
+  .form-input-wrap {
+    position: relative;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 0.5px solid var(--border2);
+    border-radius: 2px;
+    padding: 10px 14px;
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .form-input:focus {
+    border-color: var(--white);
+  }
+
+  .form-input::placeholder {
+    color: var(--muted3);
+  }
+
+  .form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 11px;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted2);
+    cursor: pointer;
+  }
+
+  .remember-me input[type="checkbox"] {
+    accent-color: var(--white);
+  }
+
+  .forgot-link {
+    color: var(--muted2);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    transition: color 0.3s;
+  }
+
+  .forgot-link:hover {
+    color: var(--white);
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.3s;
+  }
+
+  .btn-submit:hover {
+    background: #ffffff;
+  }
+
+  .btn-submit svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .login-footer-back {
+    margin-top: 16px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+  }
+
+  .login-footer-back a {
+    color: var(--muted2);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .login-footer-back a:hover {
+    color: var(--white);
+  }
+
+  /* Responsive Mobile (HP) */
+  @media (max-width: 768px) {
+    html, body {
+      height: 100vh;
+      overflow: auto; /* Memungkinkan scroll jika layar HP sangat kecil */
+    }
+    body {
+      padding: 16px;
+    }
+    .login-wrapper {
+      grid-template-columns: 1fr;
+      height: auto;
+      max-width: 400px;
+    }
+    .login-visual {
+      display: none !important; /* TANPA FOTO DI TAMPILAN HP */
+    }
+    .login-form-side {
+      padding: 28px 24px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <!-- Sisi Kiri: Foto (Otomatis Sembunyi di HP) -->
+  <div class="login-visual">
+    <div class="login-visual-content">
+      <a href="index.html" class="login-logo">
+        <img src="assets/logo osis.png" alt="Logo SMAPSI">
+        SMAPSI <span>/ Gallery</span>
+      </a>
+    </div>
+    <div class="login-quote">
+      <h2 class="login-quote-title">Abadikan Setiap Kenangan Sekolah</h2>
+      <p class="login-quote-sub">Arsip Resmi SMA Plus Sirojussyafi'iyyah</p>
+    </div>
+  </div>
+
+  <!-- Sisi Kanan: Form Login -->
+  <div class="login-form-side">
+    <div class="login-header">
+      <div class="login-pre">Portal Anggota</div>
+      <h1 class="login-title">Masuk Akun</h1>
+      <p class="login-sub">Masukkan Username dan Password Anda untuk mengakses galeri foto.</p>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <div class="form-input-wrap">
+          <input type="text" id="username" class="form-input" placeholder="Masukkan username" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="form-input-wrap">
+          <input type="password" id="password" class="form-input" placeholder="Masukkan password" required>
+          <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('password', this)" title="Tampilkan/Sembunyikan Password">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="remember-me">
+          <input type="checkbox" id="rememberMe"> Ingat saya
+        </label>
+        <a href="#" class="forgot-link" onclick="event.preventDefault(); showLuxuryModal({ title: 'Bantuan Kata Sandi', message: 'Silakan hubungi administrator sekolah untuk reset kata sandi akun Anda.', type: 'info' });">Lupa sandi?</a>
+      </div>
+
+      <button type="submit" class="btn-submit">
+        Masuk ke Gallery
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M1 7h12M8 2l5 5-5 5"/>
+        </svg>
+      </button>
+    </form>
+
+    <div class="login-footer-back">
+      <a href="index.html">← Kembali ke Beranda Galeri</a>
+    </div>
+
+
+  </div>
+<script>
+  function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>`;
+    } else {
+      input.type = 'password';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>`;
+    }
+  }
+
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
+  function getActiveSession() {
+    const sessionStr = localStorage.getItem('user_session');
+    if (!sessionStr) return null;
+    try {
+      const session = JSON.parse(sessionStr);
+      if (Date.now() < session.expiry) {
+        return session;
+      } else {
+        localStorage.removeItem('user_session');
+        return null;
+      }
+    } catch (err) {
+      localStorage.removeItem('user_session');
+      return null;
+    }
+  }
+
+  function setSession(username, role) {
+    const sessionData = {
+      user: username,
+      role: role,
+      expiry: Date.now() + TWO_HOURS_MS
+    };
+    localStorage.setItem('user_session', JSON.stringify(sessionData));
+  }
+
+  // Jika sudah ada sesi aktif (belum 2 jam), otomatis redirect tanpa perlu ketik login lagi
+  document.addEventListener('DOMContentLoaded', () => {
+    const activeSession = getActiveSession();
+    if (activeSession) {
+      if (activeSession.role === 'admin') {
+        window.location.href = 'admin/index.html';
+        return;
+      } else {
+        window.location.href = 'index.html';
+        return;
+      }
+    }
+
+    // Isi otomatis username jika "Ingat Saya" aktif
+    const savedUser = localStorage.getItem('remembered_username');
+    const rememberMe = localStorage.getItem('remember_me');
+    if (savedUser && rememberMe === 'true') {
+      document.getElementById('username').value = savedUser;
+      document.getElementById('rememberMe').checked = true;
+    }
+  });
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const userVal = document.getElementById('username').value.trim();
+    const passVal = document.getElementById('password').value.trim();
+    const rememberChecked = document.getElementById('rememberMe').checked;
+
+    if (rememberChecked) {
+      localStorage.setItem('remembered_username', userVal);
+      localStorage.setItem('remember_me', 'true');
+    } else {
+      localStorage.removeItem('remembered_username');
+      localStorage.removeItem('remember_me');
+    }
+
+    const res = await AuthService.login(userVal, passVal);
+    if (res.success) {
+      showToast('Login berhasil! Mengarahkan...', 'success');
+      setTimeout(() => {
+        if (res.role === 'admin') {
+          window.location.href = 'admin/index.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      }, 900);
+    } else {
+      showLuxuryModal({
+        title: 'Login Gagal',
+        message: res.message || 'Username atau kata sandi tidak cocok. Gunakan password default: <strong>admin123</strong> untuk admin.',
+        type: 'error'
+      });
+    }
+  }
+</script>
+</body>
+</html>

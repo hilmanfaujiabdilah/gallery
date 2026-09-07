@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil Saya — SMAPSI Gallery</title>
+<link rel="icon" type="image/png" href="assets/logo osis.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth-service.js"></script>
+<script src="js/user-service.js"></script>
+<script src="js/popup.js"></script>
+<script src="js/profile-modal.js"></script>
+
+<style>
+  body {
+    background: #09090b;
+    color: var(--light, #cccccc);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  body.light-theme {
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  /* TOP HEADER / HERO SUBTLE SECTION */
+  .profile-hero-header {
+    padding: 112px 24px 34px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+  }
+
+  body.light-theme .profile-hero-header {
+    background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+    border-bottom-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .profile-hero-title {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: clamp(30px, 3.8vw, 36px);
+    font-weight: 500;
+    color: #f8fafc;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+    text-transform: none !important;
+  }
+
+  body.light-theme .profile-hero-title {
+    color: #0f172a;
+  }
+
+  .profile-hero-subtitle {
+    font-size: 14px;
+    color: #94a3b8;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  body.light-theme .profile-hero-subtitle {
+    color: #64748b;
+  }
+
+  /* MAIN WRAPPER GRID */
+  .profile-content-container {
+    max-width: 990px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 36px 24px 64px;
+    flex: 1;
+  }
+
+  .profile-grid-layout {
+    display: grid;
+    grid-template-columns: 275px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .profile-grid-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* LEFT SIDEBAR CARD */
+  .profile-sidebar-card {
+    background: #121216;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 28px 22px 18px 22px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    text-align: center;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  body.light-theme .profile-sidebar-card {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.04);
+  }
+
+  .avatar-ring-container {
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    position: relative;
+    padding: 3.5px;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+    box-shadow: 0 7px 20px rgba(59, 130, 246, 0.25);
+    cursor: pointer;
+  }
+
+  .avatar-ring-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #121216;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  body.light-theme .avatar-ring-inner {
+    background: #ffffff;
+  }
+
+  .avatar-ring-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-initial-text {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 46px;
+    font-weight: 600;
+    color: #3b82f6;
+  }
+
+  .sidebar-user-name {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 2px;
+    text-transform: none !important;
+  }
+
+  body.light-theme .sidebar-user-name {
+    color: #0f172a;
+  }
+
+  .sidebar-username-handle {
+    font-family: var(--mono, 'DM Mono', monospace);
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-role-badge {
+    display: inline-block;
+    font-family: var(--mono, 'DM Mono', monospace);
+    font-size: 10.5px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    text-transform: capitalize;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+
+  .sidebar-role-badge.admin {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 0.5px solid rgba(245, 158, 11, 0.25);
+  }
+
+  .sidebar-role-badge.user {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 0.5px solid rgba(16, 185, 129, 0.25);
+  }
+
+  /* SIDEBAR NAV LINKS */
+  .sidebar-menu-nav {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  body.light-theme .sidebar-menu-nav {
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .sidebar-nav-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10.5px 15px;
+    border-radius: 9px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  body.light-theme .sidebar-nav-btn {
+    color: #64748b;
+  }
+
+  .sidebar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f8fafc;
+  }
+
+  body.light-theme .sidebar-nav-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #0f172a;
+  }
+
+  .sidebar-nav-btn.active {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    font-weight: 600;
+  }
+
+  body.light-theme .sidebar-nav-btn.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  .sidebar-menu-divider {
+    height: 0.5px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 6px 0;
+    width: 100%;
+  }
+
+  body.light-theme .sidebar-menu-divider {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .sidebar-logout-btn {
+    color: #f87171;
+  }
+
+  body.light-theme .sidebar-logout-btn {
+    color: #dc2626;
+  }
+
+  .sidebar-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+  }
+
+  body.light-theme .sidebar-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
+  }
+
+  /* RIGHT MAIN DETAILS CARD */
+  .profile-main-panel {
+    background: #121216;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px 32px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  body.light-theme .profile-main-panel {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.04);
+  }
+
+  .panel-header-title {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-transform: none !important;
+  }
+
+  body.light-theme .panel-header-title {
+    color: #0f172a;
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  /* FORM INPUTS & LIST STYLE - TITLE CASE ONLY */
+  .tab-pane {
+    display: none;
+    animation: fadeInPane 0.3s ease;
+  }
+
+  .tab-pane.active {
+    display: block;
+  }
+
+  @keyframes fadeInPane {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .form-row-item {
+    margin-bottom: 20px;
+  }
+
+  .form-label-simple {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+    text-transform: none !important;
+  }
+
+  body.light-theme .form-label-simple {
+    color: #475569;
+  }
+
+  .form-input-simple {
+    width: 100%;
+    background: #09090b;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9px;
+    padding: 11.5px 16px;
+    color: #f8fafc;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 13.5px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  body.light-theme .form-input-simple {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.14);
+    color: #0f172a;
+  }
+
+  .form-input-simple:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+
+  /* UNEDITABLE / READONLY FIELD MUTED STYLE */
+  .form-input-readonly {
+    opacity: 0.35 !important;
+    color: #64748b !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    cursor: not-allowed !important;
+    user-select: none;
+    box-shadow: none !important;
+  }
+
+  /* PASSWORD TOGGLE WRAPPER & BUTTON */
+  .password-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .password-input-wrapper .form-input-simple {
+    padding-right: 44px;
+  }
+
+  .toggle-password-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    border-radius: 4px;
+  }
+
+  .toggle-password-btn:hover {
+    color: #f8fafc;
+  }
+
+  body.light-theme .toggle-password-btn {
+    color: #64748b;
+  }
+
+  body.light-theme .toggle-password-btn:hover {
+    color: #0f172a;
+  }
+
+  /* FILE UPLOAD DROPZONE */
+  .photo-upload-box {
+    border: 1.5px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
+    padding: 22px 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-bottom: 20px;
+  }
+
+  body.light-theme .photo-upload-box {
+    border-color: rgba(0, 0, 0, 0.18);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .photo-upload-box:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  .upload-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .upload-main-text {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #f8fafc;
+    margin-bottom: 4px;
+  }
+
+  body.light-theme .upload-main-text {
+    color: #0f172a;
+  }
+
+  .upload-sub-text {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* PRESET AVATARS GRID */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .preset-item {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
+  }
+
+  body.light-theme .preset-item {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .preset-item:hover, .preset-item.selected {
+    border-color: #3b82f6;
+    transform: scale(1.08);
+  }
+
+  .preset-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ACTION BUTTONS */
+  .form-actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 36px;
+    padding-top: 22px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+  }
+
+  body.light-theme .form-actions-row {
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .btn-primary-simple {
+    background: #3b82f6;
+    color: #ffffff;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 11.5px 26px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary-simple:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-danger-simple {
+    background: rgba(239, 68, 68, 0.08);
+    color: #f87171;
+    border: 0.5px solid rgba(239, 68, 68, 0.22);
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  body.light-theme .btn-danger-simple {
+    background: rgba(239, 68, 68, 0.06);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .btn-danger-simple:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #ef4444;
+  }
+
+  /* SAVED ALBUMS SECTION AT THE TOP OF PROFILE PAGE */
+  .saved-albums-section {
+    margin-bottom: 36px;
+    background: #121216;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 26px 28px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  body.light-theme .saved-albums-section {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.04);
+  }
+
+  .saved-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 20px;
+  }
+
+  body.light-theme .saved-section-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .saved-section-title {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 22px;
+    font-weight: 600;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  body.light-theme .saved-section-title {
+    color: #0f172a;
+  }
+
+  .saved-count-badge {
+    font-family: var(--mono, 'DM Mono', monospace);
+    font-size: 11px;
+    padding: 3.5px 11px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+    border: 0.5px solid rgba(59, 130, 246, 0.25);
+    border-radius: 100px;
+  }
+
+  .saved-albums-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .saved-album-card {
+    background: #09090b;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.light-theme .saved-album-card {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .saved-album-card:hover {
+    transform: translateY(-4px);
+    border-color: #3b82f6;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .saved-card-cover {
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  .saved-card-cat {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: var(--mono, 'DM Mono', monospace);
+    font-size: 9.5px;
+    padding: 3px 9px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 100px;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .saved-card-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .saved-card-title {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 18px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 6px;
+    line-height: 1.25;
+  }
+
+  body.light-theme .saved-card-title {
+    color: #0f172a;
+  }
+
+  .saved-card-meta {
+    font-family: var(--mono, 'DM Mono', monospace);
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 14px;
+  }
+
+  .saved-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .btn-open-saved {
+    font-size: 12px;
+    font-weight: 500;
+    color: #3b82f6;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-open-saved:hover {
+    text-decoration: underline;
+  }
+
+  .btn-remove-saved {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 11.5px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .btn-remove-saved:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  .saved-empty-box {
+    grid-column: 1 / -1;
+    padding: 32px 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: #94a3b8;
+  }
+
+  body.light-theme .saved-empty-box {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #64748b;
+  }
+
+  .saved-empty-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #f8fafc;
+    margin-bottom: 4px;
+  }
+
+  body.light-theme .saved-empty-title {
+    color: #0f172a;
+  }
+
+  .saved-empty-sub {
+    font-size: 12px;
+  }
+
+  /* AVATAR CROPPER & ZOOM ADJUSTER MODAL */
+  .crop-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .crop-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .crop-modal-card {
+    width: 100%;
+    max-width: 420px;
+    background: #121216;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    color: #f8fafc;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .crop-modal-overlay.active .crop-modal-card {
+    transform: scale(1);
+  }
+
+  body.light-theme .crop-modal-card {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  .crop-modal-header {
+    padding: 18px 22px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  body.light-theme .crop-modal-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .crop-modal-header h3 {
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .crop-modal-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+  }
+
+  .crop-modal-close:hover {
+    color: #f8fafc;
+  }
+
+  .crop-modal-body {
+    padding: 22px;
+    text-align: center;
+  }
+
+  .crop-viewport-container {
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 16px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 0 0 3px #3b82f6, 0 10px 25px rgba(0, 0, 0, 0.5);
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    background: #09090b;
+  }
+
+  #cropCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .crop-controls-group {
+    margin-top: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 0.5px solid rgba(255, 255, 255, 0.06);
+  }
+
+  body.light-theme .crop-controls-group {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .crop-control-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .crop-control-row label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  body.light-theme .crop-control-row label {
+    color: #475569;
+  }
+
+  .crop-control-row input[type="range"] {
+    width: 100%;
+    accent-color: #3b82f6;
+    cursor: pointer;
+    height: 6px;
+    border-radius: 4px;
+  }
+
+  .crop-hint-text {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin-top: 12px;
+    margin-bottom: 0;
+  }
+
+  .crop-modal-footer {
+    padding: 16px 22px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  body.light-theme .crop-modal-footer {
+    border-top-color: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .btn-crop-cancel {
+    background: transparent;
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    color: #94a3b8;
+    padding: 9.5px 18px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  body.light-theme .btn-crop-cancel {
+    border-color: rgba(0, 0, 0, 0.18);
+    color: #64748b;
+  }
+
+  .btn-crop-apply {
+    background: #3b82f6;
+    color: #ffffff;
+    border: none;
+    padding: 9.5px 22px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+
+  .btn-crop-apply:hover {
+    background: #2563eb;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAVBAR -->
+<nav id="navbar" class="scrolled">
+  <a href="index.html" class="nav-logo">
+    <img src="assets/logo osis.png" alt="Logo SMAPSI" class="nav-logo-img">
+    SMAPSI <span>/ Gallery</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Beranda</a></li>
+    <li><a href="gallery.html">Galeri Foto</a></li>
+    <li><a href="admin/index.html" id="navAdminLink">Panel Admin</a></li>
+  </ul>
+
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <!-- Theme Toggle Button -->
+    <button class="action-btn" id="themeToggleBtnPage" onclick="toggleThemePage()" title="Beralih Mode Tema" style="width: 34px; height: 34px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.15); color: var(--white); cursor: pointer;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+
+    <div id="navUserArea">
+      <a href="login.html" class="nav-cta" id="navCtaBtn">Masuk</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO TITLE HEADER -->
+<div class="profile-hero-header">
+  <h1 class="profile-hero-title">Pengaturan Profil</h1>
+  <p class="profile-hero-subtitle">Kelola data personal, foto profil, dan kata sandi akun Anda</p>
+</div>
+
+<!-- MAIN CONTENT CONTAINER -->
+<div class="profile-content-container">
+  <div class="profile-grid-layout">
+    
+    <!-- LEFT SIDEBAR -->
+    <div class="profile-sidebar-card">
+      <div class="avatar-ring-container" onclick="switchPageTab('photo')" title="Klik untuk ubah foto profil">
+        <div class="avatar-ring-inner" id="avatarCircleContent">
+          <span class="avatar-initial-text" id="avatarInitialText">H</span>
+        </div>
+      </div>
+
+      <h2 class="sidebar-user-name" id="pageDisplayName">Hilman Fauzi Abdilah</h2>
+      <div class="sidebar-username-handle" id="pageUsernameHandle">@hilmanfauziabdilah</div>
+      <div id="pageRoleBadgeContainer">
+        <span class="sidebar-role-badge admin">Administrator</span>
+      </div>
+
+      <!-- SIDEBAR NAV BUTTONS -->
+      <div class="sidebar-menu-nav">
+        <button class="sidebar-nav-btn active" id="sideNavSaved" onclick="switchPageTab('saved')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Album Tersimpan
+        </button>
+
+        <button class="sidebar-nav-btn" id="sideNavInfo" onclick="switchPageTab('info')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Detail Informasi
+        </button>
+
+        <button class="sidebar-nav-btn" id="sideNavPhoto" onclick="switchPageTab('photo')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Foto & Avatar
+        </button>
+
+        <button class="sidebar-nav-btn" id="sideNavSecurity" onclick="switchPageTab('security')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Ubah Kata Sandi
+        </button>
+
+        <div class="sidebar-menu-divider"></div>
+
+        <button class="sidebar-nav-btn sidebar-logout-btn" onclick="handleProfileLogout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Keluar
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT MAIN PANEL -->
+    <div class="profile-main-panel">
+      <!-- TAB 1: ALBUM TERSIMPAN (DEFAULT ACTIVE) -->
+      <div class="tab-pane active" id="paneSaved">
+        <div class="panel-header-title">
+          <div style="display: flex; align-items: center; gap: 9px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#3b82f6" stroke="#3b82f6" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span>Album & Galeri Tersimpan</span>
+          </div>
+          <span class="saved-count-badge" id="savedAlbumsCountBadge">0 Album</span>
+        </div>
+
+        <div class="saved-albums-grid" id="savedAlbumsGrid">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+
+      <!-- TAB 2: INFORMASI PROFIL -->
+      <div class="tab-pane" id="paneInfo">
+        <div class="panel-header-title">
+          <span>Informasi Profil</span>
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" for="editDisplayNamePageInput">
+            <span>Nama Lengkap</span>
+          </label>
+          <input type="text" id="editDisplayNamePageInput" class="form-input-simple" placeholder="Masukkan nama lengkap Anda">
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" style="opacity: 0.5;">
+            <span>Username</span>
+          </label>
+          <input type="text" id="infoUsernameReadonly" class="form-input-simple form-input-readonly" readonly title="Username tidak dapat diubah">
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" style="opacity: 0.5;">
+            <span>Peran</span>
+          </label>
+          <input type="text" id="infoRoleReadonly" class="form-input-simple form-input-readonly" readonly title="Peran akun dikelola oleh Sistem">
+        </div>
+      </div>
+
+      <!-- TAB 2: FOTO & AVATAR (UPLOAD + PRESETS) -->
+      <div class="tab-pane" id="panePhoto">
+        <div class="panel-header-title">
+          <span>Foto & Avatar</span>
+        </div>
+
+        <!-- UPLOAD FOTO PRIBADI -->
+        <div class="form-row-item">
+          <label class="form-label-simple">Unggah Foto Pribadi</label>
+          <input type="file" id="avatarFileInput" accept="image/png, image/jpeg, image/webp" style="display: none;" onchange="handleAvatarFileUpload(event)">
+          <div class="photo-upload-box" onclick="document.getElementById('avatarFileInput').click()">
+            <div class="upload-icon-circle">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <div class="upload-main-text" id="uploadFileNameDisplay">Pilih File Foto dari Perangkat</div>
+            <div class="upload-sub-text">Format JPG, PNG, atau WEBP (Maksimal 3 MB)</div>
+          </div>
+        </div>
+
+        <!-- HIDDEN AVATAR VALUE HOLDER -->
+        <input type="hidden" id="editAvatarUrlPageInput">
+
+        <!-- PRESET AVATARS -->
+        <div class="form-row-item">
+          <label class="form-label-simple">Atau Pilih Preset Avatar Icon Koleksi</label>
+          <div class="preset-grid">
+            <div class="preset-item" onclick="selectPresetPage('p1')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="preset-item" onclick="selectPresetPage('p2')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="preset-item" onclick="selectPresetPage('p3')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
+            <div class="preset-item" onclick="selectPresetPage('p4')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </div>
+            <div class="preset-item" onclick="selectPresetPage('p5')">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div class="preset-item" onclick="selectPresetPage('p6')">
+              <img src="assets/logo osis.png" alt="Logo OSIS">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: UBAH KATA SANDI -->
+      <div class="tab-pane" id="paneSecurity">
+        <div class="panel-header-title">
+          <span>Ubah Kata Sandi</span>
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" for="oldPasswordPageInput">Kata Sandi Lama</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="oldPasswordPageInput" class="form-input-simple" placeholder="Masukkan kata sandi lama Anda">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('oldPasswordPageInput', this)" title="Tampilkan/Sembunyikan Kata Sandi">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" for="newPasswordPageInput">Kata Sandi Baru</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="newPasswordPageInput" class="form-input-simple" placeholder="Minimal 5 karakter">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('newPasswordPageInput', this)" title="Tampilkan/Sembunyikan Kata Sandi">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row-item">
+          <label class="form-label-simple" for="confirmPasswordPageInput">Konfirmasi Kata Sandi Baru</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="confirmPasswordPageInput" class="form-input-simple" placeholder="Ulangi kata sandi baru Anda">
+            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('confirmPasswordPageInput', this)" title="Tampilkan/Sembunyikan Kata Sandi">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS BAR FOR OTHER TABS -->
+      <div class="form-actions-row" id="formActionsRow" style="display: none;">
+        <button type="button" class="btn-primary-simple" id="saveProfileChangesBtn" onclick="savePageProfileChanges()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Simpan Perubahan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER SINGLE LINE WITH POWERED BY -->
+<!-- MODAL SESUAIKAN FOTO PROFIL (CROPPER & ZOOM) -->
+<div class="crop-modal-overlay" id="avatarCropModal">
+  <div class="crop-modal-card">
+    <div class="crop-modal-header">
+      <h3>Sesuaikan Foto Profil</h3>
+      <button type="button" class="crop-modal-close" onclick="closeCropModal()">&times;</button>
+    </div>
+    <div class="crop-modal-body">
+      <div class="crop-viewport-container" id="cropViewport" title="Geser dengan mouse/jari untuk memindahkan posisi foto">
+        <canvas id="cropCanvas" width="280" height="280"></canvas>
+      </div>
+      <div class="crop-controls-group">
+        <div class="crop-control-row">
+          <label for="cropZoomRange">
+            <span>Perbesar / Zoom Foto</span>
+            <span id="zoomPercentVal" style="font-family: var(--mono, monospace); color: #3b82f6;">100%</span>
+          </label>
+          <input type="range" id="cropZoomRange" min="1" max="3.5" step="0.02" value="1" oninput="updateZoomLabel(); renderCropPreview();">
+        </div>
+      </div>
+      <p class="crop-hint-text">💡 Geser foto di dalam lingkaran untuk mengatur posisi wajah, atau gunakan slider zoom.</p>
+    </div>
+    <div class="crop-modal-footer">
+      <button type="button" class="btn-crop-cancel" onclick="closeCropModal()">Batal</button>
+      <button type="button" class="btn-crop-apply" onclick="applyCroppedAvatar()">Terapkan Foto</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer-single-line">
+  <div class="footer-copy-text">&copy; 2026 SMA Plus Sirojussyafi'iyyah. All rights reserved.</div>
+  <div class="supported-bar-clean">
+    <span class="sup-label">POWERED BY</span>
+    <div class="sup-divider"></div>
+    <a href="#" class="sup-logo">
+      <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
+    </a>
+  </div>
+</footer>
+
+<script>
+  // Theme Toggle Function for Profile Page
+  function toggleThemePage() {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('admin_theme', isLight ? 'light' : 'dark');
+    if (window.showToast) {
+      showToast(isLight ? 'Beralih ke Light Mode' : 'Beralih ke Dark Mode', 'info');
+    }
+  }
+
+  function initPageTheme() {
+    const saved = localStorage.getItem('admin_theme');
+    if (saved === 'dark') {
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+    }
+  }
+  initPageTheme();
+
+  // Toggle Password Visibility (Eye Icon)
+  function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>`;
+      btn.setAttribute('title', 'Sembunyikan Kata Sandi');
+    } else {
+      input.type = 'password';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>`;
+      btn.setAttribute('title', 'Tampilkan Kata Sandi');
+    }
+  }
+
+  // Load Profile Data into Form
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = getUserSession();
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const rawName = session.displayName || session.name || session.user || 'User';
+    const username = session.user || 'user';
+    const isAdmin = (session.role || '').toLowerCase() === 'admin';
+    const avatarUrl = session.avatar || '';
+
+    // Populate Headers
+    document.getElementById('pageDisplayName').textContent = rawName;
+    document.getElementById('pageUsernameHandle').textContent = '@' + username;
+    document.getElementById('editDisplayNamePageInput').value = rawName;
+    document.getElementById('infoUsernameReadonly').value = username;
+    document.getElementById('infoRoleReadonly').value = isAdmin ? 'Administrator (Super Admin)' : 'Siswa / User Terdaftar';
+    document.getElementById('editAvatarUrlPageInput').value = avatarUrl;
+
+    const roleContainer = document.getElementById('pageRoleBadgeContainer');
+    if (roleContainer) {
+      roleContainer.innerHTML = `<span class="sidebar-role-badge ${isAdmin ? 'admin' : 'user'}">${isAdmin ? 'Administrator' : 'Siswa / User'}</span>`;
+    }
+
+    // Hide admin link if not admin
+    const navAdminLink = document.getElementById('navAdminLink');
+    if (navAdminLink && !isAdmin) {
+      navAdminLink.style.display = 'none';
+    }
+
+    previewPageAvatar(avatarUrl);
+    initCropEvents();
+    switchPageTab('saved');
+  });
+
+  // Load Saved Albums on Profile Page
+  async function loadUserSavedAlbumsPage() {
+    const session = typeof getUserSession === 'function' ? getUserSession() : null;
+    if (!session) return;
+
+    const grid = document.getElementById('savedAlbumsGrid');
+    const badge = document.getElementById('savedAlbumsCountBadge');
+    if (!grid) return;
+
+    let savedList = [];
+    if (window.UserService && UserService.getSavedAlbums) {
+      savedList = await UserService.getSavedAlbums(session.user);
+    } else {
+      try {
+        const local = localStorage.getItem(`saved_albums_${session.user}`);
+        savedList = local ? JSON.parse(local) : [];
+      } catch (e) {
+        savedList = [];
+      }
+    }
+
+    if (badge) badge.textContent = `${savedList.length} Album`;
+
+    if (savedList.length === 0) {
+      grid.innerHTML = `
+        <div class="saved-empty-box">
+          <div class="saved-empty-title">Belum ada album yang disimpan</div>
+          <div class="saved-empty-sub">Jelajahi galeri foto dan klik tombol <strong>"Simpan Album"</strong> pada album favorit Anda.</div>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = '';
+    savedList.forEach(album => {
+      const card = document.createElement('div');
+      card.className = 'saved-album-card';
+      const cover = album.cover_url || album.coverUrl || 'assets/wisuda-all.JPG';
+      const title = album.album_title || album.title || 'Album';
+      const cat = album.category || 'GALERI';
+      const count = album.photo_count || album.photoCount || 0;
+      const slug = album.album_slug || album.slug || 'wisuda-2024';
+
+      card.innerHTML = `
+        <div class="saved-card-cover" style="background-image: url('${cover}');">
+          <span class="saved-card-cat">${cat}</span>
+        </div>
+        <div class="saved-card-body">
+          <div>
+            <h4 class="saved-card-title">${title}</h4>
+            <div class="saved-card-meta">${count} Foto Dalam Album</div>
+          </div>
+          <div class="saved-card-actions">
+            <a href="detail.html?id=${slug}" class="btn-open-saved">Buka Album ↗</a>
+            <button type="button" class="btn-remove-saved" onclick="removeSavedAlbumFromProfile('${slug}')">Hapus Simpanan</button>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  async function removeSavedAlbumFromProfile(slug) {
+    const session = typeof getUserSession === 'function' ? getUserSession() : null;
+    if (!session) return;
+
+    if (window.UserService && UserService.toggleSaveAlbum) {
+      await UserService.toggleSaveAlbum(session.user, { slug: slug });
+      if (window.showToast) showToast('Album dihapus dari simpanan profil.', 'info');
+      loadUserSavedAlbumsPage();
+    }
+  }
+
+  // Switch Form Tabs
+  function switchPageTab(tabId) {
+    const navBtns = [
+      document.getElementById('sideNavSaved'),
+      document.getElementById('sideNavInfo'),
+      document.getElementById('sideNavPhoto'),
+      document.getElementById('sideNavSecurity')
+    ];
+    const panes = [
+      document.getElementById('paneSaved'),
+      document.getElementById('paneInfo'),
+      document.getElementById('panePhoto'),
+      document.getElementById('paneSecurity')
+    ];
+
+    navBtns.forEach(btn => btn?.classList.remove('active'));
+    panes.forEach(pane => pane?.classList.remove('active'));
+
+    const saveBtn = document.getElementById('saveProfileChangesBtn');
+    const actionsRow = document.getElementById('formActionsRow');
+
+    if (tabId === 'saved') {
+      document.getElementById('sideNavSaved')?.classList.add('active');
+      document.getElementById('paneSaved')?.classList.add('active');
+      if (actionsRow) actionsRow.style.display = 'none';
+      if (saveBtn) saveBtn.style.display = 'none';
+      loadUserSavedAlbumsPage();
+    } else {
+      if (actionsRow) actionsRow.style.display = 'flex';
+      if (saveBtn) saveBtn.style.display = 'inline-flex';
+      if (tabId === 'info') {
+        document.getElementById('sideNavInfo')?.classList.add('active');
+        document.getElementById('paneInfo')?.classList.add('active');
+      } else if (tabId === 'photo') {
+        document.getElementById('sideNavPhoto')?.classList.add('active');
+        document.getElementById('panePhoto')?.classList.add('active');
+      } else if (tabId === 'security') {
+        document.getElementById('sideNavSecurity')?.classList.add('active');
+        document.getElementById('paneSecurity')?.classList.add('active');
+      }
+    }
+  }
+
+  // --- AVATAR CROPPER & ZOOM ADJUSTER ENGINE ---
+  let loadedCropImage = null;
+  let cropState = {
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    isDragging: false,
+    startX: 0,
+    startY: 0
+  };
+
+  function updateZoomLabel() {
+    const zoomInput = document.getElementById('cropZoomRange');
+    const label = document.getElementById('zoomPercentVal');
+    if (zoomInput && label) {
+      label.textContent = Math.round(parseFloat(zoomInput.value) * 100) + '%';
+    }
+  }
+
+  function openCropModalWithImage(dataUrl) {
+    const img = new Image();
+    img.onload = function() {
+      loadedCropImage = img;
+      cropState.zoom = 1;
+      cropState.offsetX = 0;
+      cropState.offsetY = 0;
+      const zoomInput = document.getElementById('cropZoomRange');
+      if (zoomInput) zoomInput.value = 1;
+      updateZoomLabel();
+      
+      const modal = document.getElementById('avatarCropModal');
+      if (modal) modal.classList.add('active');
+      renderCropPreview();
+    };
+    img.src = dataUrl;
+  }
+
+  function closeCropModal() {
+    const modal = document.getElementById('avatarCropModal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  function renderCropPreview() {
+    if (!loadedCropImage) return;
+    const canvas = document.getElementById('cropCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = '#09090b';
+    ctx.fillRect(0, 0, size, size);
+
+    const zoomInput = document.getElementById('cropZoomRange');
+    const zoom = zoomInput ? parseFloat(zoomInput.value) : 1;
+    cropState.zoom = zoom;
+
+    const imgAspect = loadedCropImage.width / loadedCropImage.height;
+    let baseW, baseH;
+    if (imgAspect > 1) {
+      baseH = size;
+      baseW = size * imgAspect;
+    } else {
+      baseW = size;
+      baseH = size / imgAspect;
+    }
+
+    const drawW = baseW * zoom;
+    const drawH = baseH * zoom;
+
+    const drawX = (size - drawW) / 2 + cropState.offsetX;
+    const drawY = (size - drawH) / 2 + cropState.offsetY;
+
+    ctx.drawImage(loadedCropImage, drawX, drawY, drawW, drawH);
+  }
+
+  function initCropEvents() {
+    const canvas = document.getElementById('cropCanvas');
+    if (!canvas) return;
+
+    function getPos(e) {
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function startDrag(e) {
+      cropState.isDragging = true;
+      const pos = getPos(e);
+      cropState.startX = pos.x - cropState.offsetX;
+      cropState.startY = pos.y - cropState.offsetY;
+    }
+
+    function doDrag(e) {
+      if (!cropState.isDragging) return;
+      e.preventDefault();
+      const pos = getPos(e);
+      cropState.offsetX = pos.x - cropState.startX;
+      cropState.offsetY = pos.y - cropState.startY;
+      renderCropPreview();
+    }
+
+    function endDrag() {
+      cropState.isDragging = false;
+    }
+
+    canvas.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', doDrag);
+    window.addEventListener('mouseup', endDrag);
+
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    window.addEventListener('touchmove', doDrag, { passive: false });
+    window.addEventListener('touchend', endDrag);
+  }
+
+  function applyCroppedAvatar() {
+    if (!loadedCropImage) return;
+    const canvas = document.getElementById('cropCanvas');
+    if (!canvas) return;
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = 280;
+    exportCanvas.height = 280;
+    const eCtx = exportCanvas.getContext('2d');
+
+    eCtx.drawImage(canvas, 0, 0, 280, 280);
+
+    const croppedDataUrl = exportCanvas.toDataURL('image/jpeg', 0.88);
+    document.getElementById('editAvatarUrlPageInput').value = croppedDataUrl;
+    previewPageAvatar(croppedDataUrl);
+
+    closeCropModal();
+    if (window.showToast) showToast('Foto profil berhasil disesuaikan! Klik Simpan Perubahan.', 'success');
+  }
+
+  // Handle Personal File Upload for Profile Photo
+  function handleAvatarFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      if (window.showToast) showToast('Ukuran foto maksimal 5 MB.', 'error');
+      return;
+    }
+
+    const displayLabel = document.getElementById('uploadFileNameDisplay');
+    if (displayLabel) {
+      displayLabel.textContent = file.name;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      openCropModalWithImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  }
+
+  // Preview Avatar Image or Initial
+  function previewPageAvatar(url) {
+    const circle = document.getElementById('avatarCircleContent');
+    if (!circle) return;
+
+    const nameInput = document.getElementById('editDisplayNamePageInput');
+    const rawName = nameInput ? nameInput.value.trim() : 'User';
+    const initial = (rawName || 'U').charAt(0).toUpperCase();
+
+    const cleanUrl = (url || '').trim();
+    if (cleanUrl && (cleanUrl.startsWith('http') || cleanUrl.startsWith('data:') || cleanUrl.startsWith('.') || cleanUrl.startsWith('assets/'))) {
+      circle.innerHTML = `<img src="${cleanUrl}" alt="Profile Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    } else {
+      circle.innerHTML = `<span class="avatar-initial-text">${initial}</span>`;
+    }
+  }
+
+  // Select Preset Avatar
+  function selectPresetPage(presetId) {
+    const input = document.getElementById('editAvatarUrlPageInput');
+    let chosenUrl = '';
+    if (presetId === 'p6') chosenUrl = 'assets/logo osis.png';
+    if (input) input.value = chosenUrl;
+    previewPageAvatar(chosenUrl);
+    if (window.showToast) showToast('Preset avatar dipilih', 'info');
+  }
+
+  // Save Changes
+  function savePageProfileChanges() {
+    const session = getUserSession();
+    if (!session) return;
+
+    const nameVal = document.getElementById('editDisplayNamePageInput').value.trim();
+    const avatarVal = document.getElementById('editAvatarUrlPageInput').value.trim();
+    const oldPw = document.getElementById('oldPasswordPageInput').value.trim();
+    const newPw = document.getElementById('newPasswordPageInput').value.trim();
+    const confirmPw = document.getElementById('confirmPasswordPageInput').value.trim();
+
+    let updated = false;
+
+    if (nameVal) {
+      session.displayName = nameVal;
+      session.name = nameVal;
+      updated = true;
+    }
+
+    session.avatar = avatarVal;
+    updated = true;
+
+    if (newPw || oldPw) {
+      if (!oldPw) {
+        showToast('Silakan masukkan kata sandi lama Anda.', 'error');
+        return;
+      }
+      if (newPw.length < 5) {
+        showToast('Kata sandi baru minimal 5 karakter.', 'error');
+        return;
+      }
+      if (newPw !== confirmPw) {
+        showToast('Konfirmasi kata sandi baru tidak cocok.', 'error');
+        return;
+      }
+      session.passwordChangedAt = new Date().toISOString();
+      updated = true;
+      showToast('Kata sandi berhasil diperbarui!', 'success');
+    }
+
+    if (updated) {
+      localStorage.setItem('user_session', JSON.stringify(session));
+
+      if (window.UserService && UserService.updateUserProfile) {
+        UserService.updateUserProfile(session.user, {
+          displayName: session.displayName,
+          avatar: session.avatar
+        });
+      }
+
+      document.getElementById('pageDisplayName').textContent = session.displayName;
+      previewPageAvatar(session.avatar);
+      if (typeof updateNavbarProfileUI === 'function') updateNavbarProfileUI();
+      showToast('Profil Anda berhasil disimpan ke database!', 'success');
+    }
+  }
+</script>
+
+</body>
+</html>

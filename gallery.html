@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koleksi Galeri — SMAPSI Gallery</title>
+<link rel="icon" type="image/png" href="assets/logo osis.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/popup.js"></script>
+<script src="js/profile-modal.js"></script>
+</head>
+<body class="gallery-page">
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- NAVIGATION -->
+<nav id="navbar" class="scrolled">
+  <a href="index.html" class="nav-logo">
+    <img src="assets/logo osis.png" alt="Logo SMAPSI" class="nav-logo-img">
+    SMAPSI <span>/ Gallery</span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="index.html#hero">Beranda</a></li>
+    <li><a href="gallery.html" class="active">Galeri Full</a></li>
+    <li><a href="index.html#kegiatan">Kegiatan</a></li>
+    <li><a href="index.html#gate">Tentang</a></li>
+  </ul>
+
+  <div id="navUserArea" style="display: flex; align-items: center; gap: 12px;">
+    <a href="login.html" class="nav-cta" id="navCtaBtn">Masuk</a>
+  </div>
+
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="nav-drawer-overlay" id="drawerOverlay"></div>
+<div class="nav-drawer" id="drawer">
+  <a href="index.html#hero">Beranda</a>
+  <a href="gallery.html" class="active">Galeri Full</a>
+  <a href="index.html#kegiatan">Kegiatan</a>
+  <a href="index.html#gate">Tentang</a>
+  <a href="login.html" class="drawer-cta" id="drawerCtaBtn">Masuk Sekarang</a>
+</div>
+
+<!-- PAGE HEADER HERO -->
+<header style="padding: 140px 48px 60px; border-bottom: 0.5px solid var(--border); background: linear-gradient(180deg, var(--black) 0%, var(--deep) 100%);">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted2); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+      <span style="display: inline-block; width: 20px; height: 1px; background: var(--muted2);"></span>
+      Arsip Dokumentasi Resmi
+    </div>
+    <h1 style="font-family: var(--serif); font-size: clamp(32px, 5vw, 54px); font-weight: 500; color: var(--white); line-height: 1.1; margin-bottom: 16px;">
+      Koleksi Seluruh Album Galeri
+    </h1>
+    <p style="font-size: 14px; color: var(--light); max-width: 680px; line-height: 1.6; font-family: var(--sans);">
+      Jelajahi dokumentasi lengkap kegiatan siswa, organisasi, dan acara resmi SMAPSI. Klik album mana saja untuk membuka lembaran rincian kegiatan dan seluruh foto di dalamnya.
+    </p>
+  </div>
+</header>
+
+<!-- MAIN GALLERY SECTION -->
+<main style="padding: 60px 48px 100px; background: var(--black);">
+  <div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- Filter Categories -->
+    <div class="filter-row" style="margin-bottom: 40px;">
+      <button class="filter-btn active" onclick="filterGallery('all', this)">Semua Album</button>
+      <button class="filter-btn" onclick="filterGallery('wisuda', this)">Wisuda</button>
+      <button class="filter-btn" onclick="filterGallery('osis', this)">OSIS</button>
+      <button class="filter-btn" onclick="filterGallery('olahraga', this)">Olahraga</button>
+      <button class="filter-btn" onclick="filterGallery('seni', this)">Seni Budaya</button>
+      <button class="filter-btn" onclick="filterGallery('tour', this)">Study Tour</button>
+      <button class="filter-btn" onclick="filterGallery('lomba', this)">Lomba</button>
+    </div>
+
+    <!-- Album Cards Grid -->
+    <div class="masonry-grid" id="fullGalleryGrid">
+      
+      <!-- Album 1 -->
+      <div class="m-item" data-category="wisuda" onclick="openAlbumDetail('wisuda-2024')" data-img="assets/wisuda-all.JPG">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">WISUDA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Wisuda Angkatan 2024</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">248 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 2 -->
+      <div class="m-item" data-category="osis" onclick="openAlbumDetail('pelantikan-osis')" data-img="assets/heroimages-osis.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">OSIS · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pelantikan OSIS 2024</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">64 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 3 -->
+      <div class="m-item" data-category="tour" onclick="openAlbumDetail('study-tour-jogja')" data-img="assets/heroimages-perpus.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">STUDY TOUR · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Study Tour Yogyakarta</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">201 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 4 -->
+      <div class="m-item" data-category="olahraga" onclick="openAlbumDetail('futsal-2024')" data-img="assets/heroimages-labipa.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">OLAHRAGA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Turnamen Futsal Cup</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">92 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 5 -->
+      <div class="m-item" data-category="seni" onclick="openAlbumDetail('pagelaran-seni')" data-img="assets/heroimages-tari.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">SENI BUDAYA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pagelaran Seni Akhir Tahun</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">134 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 6 -->
+      <div class="m-item" data-category="lomba" onclick="openAlbumDetail('osn-2024')" data-img="assets/wisuda-juara.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">LOMBA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Olimpiade Sains Nasional</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">86 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 7 -->
+      <div class="m-item" data-category="osis" onclick="openAlbumDetail('pensi-osis')" data-img="assets/heroimages-osis.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">OSIS · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pentas Seni (Pensi) OSIS</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">178 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 8 -->
+      <div class="m-item" data-category="wisuda" onclick="openAlbumDetail('perpisahan-kelas12')" data-img="assets/wisuda-kelas12.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">WISUDA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Perpisahan Kelas XII</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">96 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Album 9 -->
+      <div class="m-item" data-category="olahraga" onclick="openAlbumDetail('class-meeting')" data-img="assets/heroimages-labipa.jpg">
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">OLAHRAGA · 2024</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Class Meeting Semester 1</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">113 Foto Terorganisir</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer style="padding: 24px 48px; border-top: 0.5px solid var(--border); background: var(--deep); text-align: center;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+    <span style="font-size: 11px; font-family: var(--mono); color: var(--muted2);">
+      © 2026 SMA Plus Sirojussyafi'iyyah. All rights reserved.
+    </span>
+    <div class="supported-bar" style="border-top: none; margin-top: 4px; padding-top: 0;">
+      <span class="sup-label">Powered by</span>
+      <div class="sup-divider"></div>
+      <a href="#" class="sup-logo">
+        <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Initialize background images
+  document.querySelectorAll('.m-item').forEach(item => {
+    const imgSrc = item.getAttribute('data-img');
+    if (imgSrc) {
+      item.style.backgroundImage = `url('${imgSrc}')`;
+    }
+  });
+
+  function openAlbumDetail(albumId) {
+    window.location.href = 'detail.html?id=' + albumId;
+  }
+
+  function filterGallery(category, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const items = document.querySelectorAll('.m-item');
+    items.forEach(item => {
+      const cat = item.getAttribute('data-category');
+      if (category === 'all' || cat === category) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // Session check
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateNavbarProfileUI === 'function') {
+      updateNavbarProfileUI();
+    }
+  });
+</script>
+</body>
+</html>

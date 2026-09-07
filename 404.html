@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Halaman Tidak Ditemukan | SMAPSI Gallery</title>
+<link rel="icon" type="image/png" href="assets/logo osis.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body {
+    background: #080808 !important;
+    color: var(--light);
+  }
+
+  .error-page-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 24px;
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    background: #080808;
+  }
+
+  .error-nav {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .error-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--white);
+    font-family: var(--serif);
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .error-brand img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  .error-content-box {
+    max-width: 580px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 40px 20px;
+  }
+
+  .error-code-badge {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted1);
+    background: rgba(255, 255, 255, 0.05);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 16px;
+    border-radius: 100px;
+  }
+
+  .error-big-code {
+    font-family: var(--serif);
+    font-size: clamp(100px, 15vw, 160px);
+    font-weight: 500;
+    line-height: 0.9;
+    color: var(--white);
+    letter-spacing: -0.04em;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+  }
+
+  .error-title {
+    font-family: var(--serif);
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 400;
+    color: var(--white);
+    margin-top: -10px;
+  }
+
+  .error-desc {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--muted1);
+    line-height: 1.7;
+    max-width: 440px;
+  }
+
+  .error-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .btn-primary-luxury {
+    background: var(--white);
+    color: var(--black);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s var(--ease-out);
+    border: 1px solid var(--white);
+  }
+
+  .btn-primary-luxury:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15);
+    background: #ffffff;
+  }
+
+  .btn-secondary-luxury {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--white);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s var(--ease-out);
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .btn-secondary-luxury:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+  }
+
+  footer.footer-single-line {
+    width: 100%;
+    max-width: 1200px;
+    padding-top: 20px;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .footer-copy-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted1);
+    letter-spacing: 0.04em;
+  }
+
+  .supported-bar-clean {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .supported-bar-clean .sup-label {
+    font-size: 9px;
+    font-family: var(--mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+
+  .supported-bar-clean .sup-divider {
+    width: 0.5px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .supported-bar-clean .sup-logo {
+    text-decoration: none;
+  }
+
+  .supported-bar-clean .sup-logo-name {
+    font-size: 11.5px;
+    font-family: var(--mono);
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .supported-bar-clean .sup-logo-name span {
+    color: var(--muted1);
+    font-weight: 400;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-page-container">
+  <!-- TOP BRAND NAV -->
+  <header class="error-nav">
+    <a href="index.html" class="error-brand">
+      <img src="assets/logo osis.png" alt="Logo SMAPSI">
+      <span>SMAPSI / Gallery</span>
+    </a>
+    <a href="index.html" class="btn-secondary-luxury" style="padding: 8px 16px; font-size: 11.5px;">
+      ← Kembali ke Beranda
+    </a>
+  </header>
+
+  <!-- MAIN 404 CONTENT -->
+  <main class="error-content-box">
+    <div class="error-code-badge">404 — HALAMAN TIDAK DITEMUKAN</div>
+    <div class="error-big-code">404</div>
+    <h1 class="error-title">Halaman yang Anda Cari Tidak Ada</h1>
+    <p class="error-desc">
+      Maaf, halaman atau dokumen yang Anda tuju mungkin telah dipindahkan, dihapus, atau alamat URL yang Anda masukkan kurang tepat.
+    </p>
+
+    <div class="error-actions">
+      <a href="gallery.html" class="btn-primary-luxury">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        Jelajahi Galeri Foto
+      </a>
+      <a href="admin/index.html" class="btn-secondary-luxury">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        Dashboard Admin
+      </a>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer-single-line">
+    <div class="footer-copy-text">&copy; 2026 SMA Plus Sirojussyafi'iyyah. All rights reserved.</div>
+    <div class="supported-bar-clean">
+      <span class="sup-label">POWERED BY</span>
+      <div class="sup-divider"></div>
+      <a href="#" class="sup-logo">
+        <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
+      </a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

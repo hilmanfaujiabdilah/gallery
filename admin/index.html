@@ -1,0 +1,2221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Administrator — Gallery</title>
+<link rel="icon" type="image/png" href="../assets/logo osis.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/auth-service.js"></script>
+<script src="../js/gallery-service.js"></script>
+<script src="../js/category-service.js"></script>
+<script src="../js/user-service.js"></script>
+<script src="../js/popup.js"></script>
+<script src="../js/profile-modal.js"></script>
+</head>
+<body class="admin-body light-theme">
+
+<!-- SIDEBAR OVERLAY FOR MOBILE -->
+<div class="admin-sidebar-overlay" id="sidebarOverlay" onclick="toggleAdminSidebar()"></div>
+
+<!-- LEFT SIDEBAR -->
+<aside class="admin-sidebar" id="adminSidebar">
+  <div class="sidebar-top">
+    <!-- Brand Logo -->
+    <a href="../index.html" class="sidebar-brand">
+      <img src="../assets/logo osis.png" alt="Logo SMAPSI">
+      <span>Gallery / Admin</span>
+    </a>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-menu">
+      <div class="menu-category">MENU UTAMA</div>
+      
+      <a class="menu-item active" id="menu-gallery" onclick="switchSidebarMenu('gallery')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>Kelola Gallery</span>
+      </a>
+
+      <a class="menu-item" id="menu-storage" onclick="switchSidebarMenu('storage')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          <line x1="12" y1="11" x2="12" y2="17"/>
+          <line x1="9" y1="14" x2="15" y2="14"/>
+        </svg>
+        <span>Kelola Drive</span>
+      </a>
+
+      <a class="menu-item" id="menu-users" onclick="switchSidebarMenu('users')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>Kelola Akun User</span>
+      </a>
+
+      <a class="menu-item" id="menu-logs" onclick="switchSidebarMenu('logs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span>Log Login User</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Sidebar Bottom Section -->
+  <div class="sidebar-bottom">
+    <a href="../gallery.html" class="btn-sidebar-view" title="Lihat Tampilan Galeri Utama">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+      <span>Lihat Galeri Utama</span>
+    </a>
+
+    <div class="sidebar-user" onclick="openUserProfileModal()" style="cursor: pointer;" title="Klik untuk Edit Profil & Kata Sandi">
+      <div class="user-info">
+        <div class="user-avatar" id="adminSidebarAvatar">A</div>
+        <div>
+          <div class="user-name" id="adminSidebarName">Administrator</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+      </div>
+      <button class="btn-sidebar-logout" onclick="event.stopPropagation(); handleProfileLogout();" title="Keluar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT WRAPPER -->
+<div class="admin-main-wrapper">
+  <!-- Topbar -->
+  <header class="admin-topbar">
+    <div class="topbar-left">
+      <button class="btn-toggle-sidebar" id="sidebarToggle" onclick="toggleAdminSidebar()" title="Sembunyikan / Tampilkan Sidebar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div>
+        <h1 class="topbar-title" id="pageTitle">Kelola Gallery</h1>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button class="btn-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Beralih Mode Tema">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Padding -->
+  <main class="admin-content-padding">
+    <!-- PANEL 1: KELOLA ISI GALERI -->
+    <div id="panel-gallery" class="tab-content active">
+      <!-- Overview Stats Bar -->
+      <div class="admin-stats">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Total Foto Galeri</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value">2,480</div>
+          <div class="stat-sub"><span class="stat-trend positive">↑ +18</span> foto minggu ini</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Total Akun User</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value">312</div>
+          <div class="stat-sub"><span class="stat-trend neutral">• Aktif</span> Siswa & Guru Terdaftar</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Login Hari Ini</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value">48</div>
+          <div class="stat-sub"><span class="stat-trend positive">● Live</span> Sesi aktif berjalan</div>
+        </div>
+      </div>
+      <!-- Form Tambah Album Foto -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Tambahkan Album Foto Baru</h2>
+        </div>
+
+        <form onsubmit="event.preventDefault(); showLuxuryModal({ title: 'Album Disimpan', message: 'Album foto baru berhasil ditambahkan dan langsung terintegrasi dengan galeri utama.', type: 'success' });">
+          <div class="form-row">
+            <div class="form-group-admin">
+              <label>Judul Kegiatan / Album</label>
+              <input type="text" placeholder="contoh: Wisuda Angkatan 2024" required>
+            </div>
+            <div class="form-group-admin">
+              <label>Kategori Foto</label>
+              <select id="selectKategori" onchange="handleCategorySelectChange(this)" required>
+                <option value="wisuda">Wisuda</option>
+                <option value="osis">OSIS</option>
+                <option value="olahraga">Olahraga</option>
+                <option value="seni">Seni Budaya</option>
+                <option value="tour">Study Tour</option>
+                <option value="lomba">Lomba</option>
+                <option value="__manage_categories__">+ Kelola / Tambah Kategori...</option>
+              </select>
+            </div>
+            <div class="form-group-admin">
+              <label>Jumlah Foto dalam Album</label>
+              <input type="number" placeholder="contoh: 248" value="100" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group-admin">
+              <label>Link Foto Cover / Sampel Album (Bisa lebih dari 1 link)</label>
+              <input type="text" placeholder="Masukkan link Drive cover album (gunakan koma jika lebih dari satu)" required>
+            </div>
+            <div class="form-group-admin">
+              <label>Link Folder Album Google Drive</label>
+              <input type="text" placeholder="https://drive.google.com/drive/folders/1XYZ...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group-admin" style="grid-column: 1 / -1;">
+              <label>Deskripsi Kegiatan / Album</label>
+              <textarea rows="3" placeholder="Tuliskan deskripsi ringkas mengenai kegiatan ini untuk ditampilkan pada halaman detail album..." style="resize: vertical;"></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">+ Simpan Album Foto</button>
+        </form>
+      </div>
+
+      <!-- Table Daftar Foto -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Daftar Album Foto di Galeri</h2>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Preview</th>
+                <th>Judul Foto</th>
+                <th>Kategori</th>
+                <th>Link Drive</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><img src="../assets/wisuda-all.JPG" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
+                <td><strong>Wisuda Angkatan 2024</strong></td>
+                <td><span class="badge badge-info">Wisuda</span></td>
+                <td><a href="https://drive.google.com" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px;">Buka Folder ↗</a></td>
+                <td>
+                  <button class="action-btn" onclick="openEditAlbumModal('Wisuda Angkatan 2024', 'wisuda', 248, 'https://drive.google.com/file/d/1A2B3C.../view?usp=sharing', 'https://drive.google.com', 'Dokumentasi resmi wisuda angkatan 2024 SMAPSI. Mengabadikan setiap momen berharga.')">Edit</button>
+                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Wisuda Angkatan 2024</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
+                </td>
+              </tr>
+              <tr>
+                <td><img src="../assets/heroimages-osis.jpg" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
+                <td><strong>Pelantikan OSIS 2024</strong></td>
+                <td><span class="badge badge-info">OSIS</span></td>
+                <td><a href="https://drive.google.com" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px;">Buka Folder ↗</a></td>
+                <td>
+                  <button class="action-btn" onclick="openEditAlbumModal('Pelantikan OSIS 2024', 'osis', 64, 'https://drive.google.com/file/d/4D5E6F.../view?usp=sharing', 'https://drive.google.com', 'Upacara pengukuhan dan serah terima pengurus OSIS SMAPSI 2024.')">Edit</button>
+                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Pelantikan OSIS 2024</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: KELOLA AKUN USER -->
+    <div id="panel-users" class="tab-content">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Tambah Akun User Baru</h2>
+        </div>
+        <form onsubmit="handleCreateUserSubmit(event)">
+          <div class="form-row">
+            <div class="form-group-admin">
+              <label>Username</label>
+              <input type="text" id="newUsernameInput" placeholder="username_siswa" required>
+            </div>
+            <div class="form-group-admin">
+              <label>Password</label>
+              <div class="form-input-wrap">
+                <input type="password" id="adminNewPw" placeholder="••••••••" required>
+                <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('adminNewPw', this)">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-group-admin">
+              <label>Role / Jabatan</label>
+              <select id="newUserRoleSelect" required>
+                <option value="siswa">Siswa</option>
+                <option value="guru">Guru / Staf</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">+ Tambah Akun</button>
+        </form>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <h2 class="panel-title">Daftar Akun User Terdaftar</h2>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative;">
+              <input type="text" id="searchUserInput" oninput="handleUserSearchInput(this.value)" placeholder="Cari username / role..." style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 6px 12px 6px 30px; color: var(--white); font-size: 11px; width: 220px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted1);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID User</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 0.5px solid var(--border); font-family: var(--mono); font-size: 10.5px; color: var(--muted1); flex-wrap: wrap; gap: 10px;">
+          <!-- Left: Info Text -->
+          <div id="userPaginationInfo">Menampilkan 1-25 dari 1 Akun</div>
+
+          <!-- Center: Per Page Dropdown Select -->
+          <div style="display: flex; align-items: center; justify-content: center;">
+            <select id="userPageLimitSelect" onchange="handleUserLimitChange(this.value)" style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 4px 10px; color: var(--white); font-family: var(--mono); font-size: 10.5px; outline: none;">
+              <option value="10">10 per halaman</option>
+              <option value="20">20 per halaman</option>
+              <option value="25" selected>25 per halaman</option>
+              <option value="50">50 per halaman</option>
+              <option value="100">100 per halaman</option>
+            </select>
+          </div>
+
+          <!-- Right: Page Navigation Buttons -->
+          <div style="display: flex; align-items: center; gap: 6px;" id="userPaginationControls">
+            <button type="button" class="action-btn" id="btnPrevUserPage" onclick="changeUserPage(-1)" style="padding: 4px 10px; font-size: 9.5px;">‹ Sebelumnya</button>
+            <span id="userPageIndicator" style="color: var(--white); padding: 0 6px;">Halaman 1 dari 1</span>
+            <button type="button" class="action-btn" id="btnNextUserPage" onclick="changeUserPage(1)" style="padding: 4px 10px; font-size: 9.5px;">Selanjutnya ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: LOG LOGIN USER -->
+    <div id="panel-logs" class="tab-content">
+      <!-- Ringkasan Riwayat Log (Overview Stats) -->
+      <div class="admin-stats" style="margin-bottom: 20px;">
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Total Login Hari Ini</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="logStatTotalToday">48</div>
+          <div class="stat-sub"><span class="stat-trend positive">● Live</span> Sesi aktif berjalan hari ini</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Login User (Siswa & Guru)</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="logStatUserCount">38</div>
+          <div class="stat-sub"><span class="stat-trend neutral">• Aktif</span> Sesi Login User Terdaftar</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-header">
+            <div class="stat-title">Login Administrator</div>
+            <div class="stat-icon-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-value" id="logStatAdminCount">10</div>
+          <div class="stat-sub"><span class="stat-trend positive">⚡ Admin</span> Sesi Akses Pengelola</div>
+        </div>
+      </div>
+
+      <!-- Log Trend Line Charts Grid (Left: User, Right: Admin) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 20px;">
+        <!-- Left: User Log Trend Chart -->
+        <div class="panel-card" style="margin-bottom: 0;">
+          <div class="panel-header" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="stat-icon-wrap" style="width: 26px; height: 26px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </div>
+              <h3 class="panel-title" style="font-size: 14.5px;">Grafik Log User</h3>
+            </div>
+            <span style="font-family: var(--mono); font-size: 10px; background: rgba(16, 185, 129, 0.12); color: #10b981; padding: 2px 8px; border-radius: 4px; border: 0.5px solid rgba(16, 185, 129, 0.25);">Siswa & Guru</span>
+          </div>
+          <div style="position: relative; height: 200px; width: 100%;">
+            <canvas id="userLogChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Right: Admin Log Trend Chart -->
+        <div class="panel-card" style="margin-bottom: 0;">
+          <div class="panel-header" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="stat-icon-wrap" style="width: 26px; height: 26px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+              </div>
+              <h3 class="panel-title" style="font-size: 14.5px;">Grafik Log Admin</h3>
+            </div>
+            <span style="font-family: var(--mono); font-size: 10px; background: rgba(59, 130, 246, 0.12); color: #3b82f6; padding: 2px 8px; border-radius: 4px; border: 0.5px solid rgba(59, 130, 246, 0.25);">Administrator</span>
+          </div>
+          <div style="position: relative; height: 200px; width: 100%;">
+            <canvas id="adminLogChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Card: Riwayat Log Login Sistem -->
+      <div class="panel-card">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <h2 class="panel-title">Riwayat Log Login Sistem</h2>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Search input -->
+            <div style="position: relative;">
+              <input type="text" id="searchLogInput" oninput="handleLogSearchInput(this.value)" placeholder="Cari log username / IP..." style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 6px 12px 6px 30px; color: var(--white); font-size: 11px; width: 200px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted1);">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+
+            <button class="action-btn" onclick="renderLoginLogsUI(); showToast('Log aktivitas sistem berhasil diperbarui', 'info');" style="padding: 7px 12px; font-size: 9.5px;">🔄 Refresh Log</button>
+          </div>
+        </div>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Waktu</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status Login</th>
+                <th>IP Address</th>
+                <th>Perangkat / Browser</th>
+              </tr>
+            </thead>
+            <tbody id="loginLogsTableBody">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls (Log Login) -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 0.5px solid var(--border); font-family: var(--mono); font-size: 10.5px; color: var(--muted1); flex-wrap: wrap; gap: 10px;">
+          <!-- Left: Info Text -->
+          <div id="logPaginationInfo">Menampilkan 1-10 dari 1 Log</div>
+
+          <!-- Center: Per Page Dropdown Select -->
+          <div style="display: flex; align-items: center; justify-content: center;">
+            <select id="logPageLimitSelect" onchange="handleLogLimitChange(this.value)" style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 4px 10px; color: var(--white); font-family: var(--mono); font-size: 10.5px; outline: none;">
+              <option value="10" selected>10 per halaman</option>
+              <option value="20">20 per halaman</option>
+              <option value="50">50 per halaman</option>
+              <option value="100">100 per halaman</option>
+            </select>
+          </div>
+
+          <!-- Right: Page Navigation Buttons -->
+          <div style="display: flex; align-items: center; gap: 6px;" id="logPaginationControls">
+            <button type="button" class="action-btn" id="btnPrevLogPage" onclick="changeLogPage(-1)" style="padding: 4px 10px; font-size: 9.5px;">‹ Sebelumnya</button>
+            <span id="logPageIndicator" style="color: var(--white); padding: 0 6px;">Halaman 1 dari 1</span>
+            <button type="button" class="action-btn" id="btnNextLogPage" onclick="changeLogPage(1)" style="padding: 4px 10px; font-size: 9.5px;">Selanjutnya ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: MULTI-AKUN GOOGLE DRIVE (150 GB STORAGE POOL) -->
+    <div id="panel-storage" class="tab-content">
+      <!-- Overview Card -->
+      <div class="panel-card storage-overview-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">☁️ Multi-Cloud Storage Pool (<span id="totalAccountCountText">10</span> Akun Google Drive)</h2>
+            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px; font-family: var(--mono);">Total Kapasitas Terpusat: <span id="totalStorageGBText">150.0 GB</span> · <span id="totalAccountCountSub">10</span> Akun Gmail Gratis Terhubung</div>
+          </div>
+          <button class="btn-primary" onclick="openAddDriveAccountModal()">+ Hubungkan Akun Google Baru</button>
+        </div>
+
+        <!-- Progress Usage Bar -->
+        <div style="margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; margin-bottom: 8px;">
+            <span style="color: var(--white); font-weight: 500;">Penyimpanan Terpakai: <strong>28.5 GB</strong> / 150.0 GB</span>
+            <span style="color: #4ade80;">19% Terpakai · 121.5 GB Tersedia</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; border: 0.5px solid var(--border);">
+            <div style="width: 19%; height: 100%; background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%); border-radius: 100px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 10 Akun Google Drive -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Daftar 10 Akun Google Drive Terhubung</h2>
+          <span class="badge badge-success">● 10/10 Akun Aktif (150 GB)</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+          
+          <!-- Akun 1 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #1 · KATEGORI WISUDA</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.wisuda.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              4.2 GB / 15.0 GB Terpakai (28%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 28%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.wisuda.smapsi@gmail.com lancar! (88ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 2 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #2 · KATEGORI OSIS</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.osis.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              3.8 GB / 15.0 GB Terpakai (25%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 25%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.osis.smapsi@gmail.com lancar! (94ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 3 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #3 · KATEGORI OLAHRAGA</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.olahraga.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              2.1 GB / 15.0 GB Terpakai (14%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 14%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.olahraga.smapsi@gmail.com lancar! (102ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 4 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #4 · KATEGORI SENI BUDAYA</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.seni.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              1.9 GB / 15.0 GB Terpakai (12%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 12%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.seni.smapsi@gmail.com lancar! (90ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 5 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #5 · KATEGORI STUDY TOUR</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.tour.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              5.4 GB / 15.0 GB Terpakai (36%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 36%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.tour.smapsi@gmail.com lancar! (110ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 6 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #6 · KATEGORI LOMBA</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.lomba.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              2.8 GB / 15.0 GB Terpakai (18%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 18%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.lomba.smapsi@gmail.com lancar! (95ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 7 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #7 · ARSIP 2024</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.arsip2024.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-success">● Aktif</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              6.1 GB / 15.0 GB Terpakai (40%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 40%; height: 100%; background: #fbbf24;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.arsip2024.smapsi@gmail.com lancar! (115ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 8 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #8 · CADANGAN #1</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan1.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-info">● Standby</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              0.8 GB / 15.0 GB Terpakai (5%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 5%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan1.smapsi@gmail.com lancar! (80ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 9 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #9 · CADANGAN #2</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan2.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-info">● Standby</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              0.4 GB / 15.0 GB Terpakai (2%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 2%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan2.smapsi@gmail.com lancar! (82ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+          <!-- Akun 10 -->
+          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #10 · CADANGAN #3</span>
+                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan3.smapsi@gmail.com</h4>
+              </div>
+              <span class="badge badge-info">● Standby</span>
+            </div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
+              0.0 GB / 15.0 GB Terpakai (0%)
+            </div>
+            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
+              <div style="width: 0%; height: 100%; background: #4ade80;"></div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
+              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan3.smapsi@gmail.com lancar! (79ms)', 'success')" style="font-size: 9px;">Tes API</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- IN-APP GOOGLE DRIVE FILE EXPLORER -->
+      <div class="panel-card" style="border-color: rgba(255, 255, 255, 0.15);">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 class="panel-title">📂 Google Drive File Explorer (Manajer Folder & Foto In-App)</h2>
+            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px; font-family: var(--mono);" id="explorerBreadcrumb">
+              Drive Saya &gt; <span style="color: var(--white);" id="currentAccountLabel">drive.wisuda.smapsi@gmail.com</span>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Account Selector Dropdown -->
+            <select id="explorerAccountSelect" onchange="switchDriveExplorerAccount(this.value)" style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 7px 12px; color: var(--white); font-family: var(--mono); font-size: 10.5px;">
+              <option value="drive.wisuda.smapsi@gmail.com">drive.wisuda.smapsi@gmail.com (Wisuda)</option>
+              <option value="drive.osis.smapsi@gmail.com">drive.osis.smapsi@gmail.com (OSIS)</option>
+              <option value="drive.olahraga.smapsi@gmail.com">drive.olahraga.smapsi@gmail.com (Olahraga)</option>
+              <option value="drive.seni.smapsi@gmail.com">drive.seni.smapsi@gmail.com (Seni Budaya)</option>
+              <option value="drive.tour.smapsi@gmail.com">drive.tour.smapsi@gmail.com (Study Tour)</option>
+              <option value="drive.lomba.smapsi@gmail.com">drive.lomba.smapsi@gmail.com (Lomba)</option>
+              <option value="drive.arsip2024.smapsi@gmail.com">drive.arsip2024.smapsi@gmail.com (Arsip 2024)</option>
+              <option value="drive.cadangan1.smapsi@gmail.com">drive.cadangan1.smapsi@gmail.com (Cadangan #1)</option>
+            </select>
+
+            <button class="btn-primary" onclick="openCreateFolderModal()" style="padding: 7px 14px; font-size: 9.5px;">+ Buat Folder Baru</button>
+            <button class="btn-primary" onclick="openUploadPhotoModal()" style="padding: 7px 14px; font-size: 9.5px; background: rgba(255,255,255,0.1); color: var(--white); border: 0.5px solid var(--border2);">📤 Upload Foto</button>
+            <button class="action-btn" onclick="renderDriveExplorerUI(); showToast('Drive berhasil direfresh', 'info');" style="padding: 7px 12px; font-size: 9.5px;">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Section 1: Daftar Folder Drive -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted1); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>📁 DAFTAR FOLDER</span>
+            <span id="folderCountBadge" style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--light);">4 Folder</span>
+          </h4>
+
+          <div class="drive-grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;" id="driveFolderGrid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Section 2: Daftar Foto / File dalam Folder -->
+        <div>
+          <h4 style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted1); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🖼️ FOTO & FILE DALAM FOLDER</span>
+            <span id="fileCountBadge" style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--light);">3 File</span>
+          </h4>
+
+          <div class="drive-grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;" id="driveFileGrid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard Copyright Footer -->
+    <footer style="margin-top: auto; padding-top: 16px; padding-bottom: 0; border-top: 0.5px solid var(--border); text-align: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <span style="font-size: 11px; font-family: var(--mono); color: var(--muted2);">
+          © 2026 SMA Plus Sirojussyafi'iyyah. All rights reserved.
+        </span>
+        <div class="supported-bar" style="border-top: none; margin-top: 4px; padding: 0;">
+          <span class="sup-label">Powered by</span>
+          <div class="sup-divider"></div>
+          <a href="https://niits.tech" target="_blank" class="sup-logo">
+            <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<!-- EDIT ALBUM POPUP MODAL -->
+<div class="luxury-overlay" id="editAlbumOverlay">
+  <div class="luxury-modal" style="max-width: 640px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--white); margin: 0;">
+        ✏️ Edit Data Album Foto
+      </h3>
+      <button onclick="closeEditAlbumModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+
+    <form onsubmit="handleSaveEditAlbum(event)">
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group-admin">
+          <label>Judul Kegiatan / Album</label>
+          <input type="text" id="editJudul" required>
+        </div>
+        <div class="form-group-admin">
+          <label>Kategori Foto</label>
+          <select id="editKategori" onchange="handleCategorySelectChange(this)" required>
+            <option value="wisuda">Wisuda</option>
+            <option value="osis">OSIS</option>
+            <option value="olahraga">Olahraga</option>
+            <option value="seni">Seni Budaya</option>
+            <option value="tour">Study Tour</option>
+            <option value="lomba">Lomba</option>
+            <option value="__manage_categories__">+ Kelola / Tambah Kategori...</option>
+          </select>
+        </div>
+        <div class="form-group-admin">
+          <label>Jumlah Foto</label>
+          <input type="number" id="editJumlah" required>
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-bottom: 12px;">
+        <div class="form-group-admin">
+          <label>Link Foto Cover / Sampel Album</label>
+          <input type="text" id="editCover" placeholder="Masukkan link Drive cover album (gunakan koma jika lebih dari satu)" required>
+        </div>
+        <div class="form-group-admin">
+          <label>Link Folder Google Drive</label>
+          <input type="text" id="editDrive" placeholder="https://drive.google.com/drive/folders/...">
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-bottom: 20px;">
+        <div class="form-group-admin" style="grid-column: 1 / -1;">
+          <label>Deskripsi Kegiatan / Album</label>
+          <textarea id="editDeskripsi" rows="3" placeholder="Tuliskan deskripsi album..." style="resize: vertical;"></textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeEditAlbumModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- KELOLA KATEGORI POPUP MODAL -->
+<div class="luxury-overlay" id="manageCategoryOverlay">
+  <div class="luxury-modal" style="max-width: 500px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        🏷️ Kelola Kategori Foto
+      </h3>
+      <button onclick="closeManageCategoriesModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+
+    <!-- Form Tambah Kategori Baru -->
+    <div style="margin-bottom: 20px;">
+      <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Tambah Kategori Baru</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="newCategoryInput" placeholder="Nama kategori baru..." style="flex: 1; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 8px 12px; color: var(--white); font-size: 12px;">
+        <button type="button" class="btn-primary" onclick="addNewCategory()" style="padding: 8px 14px; font-size: 9.5px;">+ Tambah</button>
+      </div>
+    </div>
+
+    <!-- Daftar Kategori Aktif -->
+    <div>
+      <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 10px;">Daftar Kategori Saat Ini</label>
+      <div id="categoryListContainer" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px;">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px; padding-top: 12px; border-top: 0.5px solid var(--border);">
+      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeManageCategoriesModal()" style="flex: initial; padding: 7px 18px;">Selesai</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUAT FOLDER DRIVE POPUP MODAL -->
+<div class="luxury-overlay" id="createFolderOverlay">
+  <div class="luxury-modal" style="max-width: 440px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        📁 Buat Folder Baru Google Drive
+      </h3>
+      <button onclick="closeCreateFolderModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form onsubmit="handleCreateDriveFolder(event)">
+      <div style="margin-bottom: 20px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Nama Folder Baru</label>
+        <input type="text" id="newFolderNameInput" placeholder="contoh: Dokumentasi Classmeeting 2024" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeCreateFolderModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">+ Buat Folder</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- UPLOAD FOTO DRIVE POPUP MODAL -->
+<div class="luxury-overlay" id="uploadPhotoOverlay">
+  <div class="luxury-modal" style="max-width: 480px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        📤 Upload Foto ke Google Drive
+      </h3>
+      <button onclick="closeUploadPhotoModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form onsubmit="handleUploadDrivePhoto(event)">
+      <div style="margin-bottom: 18px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Pilih File Foto</label>
+        <input type="file" id="driveFileInput" accept="image/*" onchange="updateUploadFileLabel(this)" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 8px; color: var(--white); font-size: 11px;">
+        <div id="uploadFileNameLabel" style="font-family: var(--mono); font-size: 9.5px; color: #4ade80; margin-top: 6px;"></div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeUploadPhotoModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">Upload Sekarang</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- HUBUNGKAN AKUN GOOGLE DRIVE BARU POPUP MODAL -->
+<div class="luxury-overlay" id="addDriveAccountOverlay">
+  <div class="luxury-modal" style="max-width: 500px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        ☁️ Hubungkan Akun Google Drive Baru (+15 GB)
+      </h3>
+      <button onclick="closeAddDriveAccountModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form onsubmit="handleAddDriveAccount(event)">
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Alamat Gmail Akun Drive</label>
+        <input type="email" id="newAccountEmail" placeholder="contoh: drive.arsip2025.smapsi@gmail.com" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Peruntukan / Label Kategori</label>
+        <input type="text" id="newAccountLabel" placeholder="contoh: Arsip 2025 / Ekstrakurikuler" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="margin-bottom: 20px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Link Folder Utama (Opsional)</label>
+        <input type="text" id="newAccountFolderUrl" placeholder="https://drive.google.com/drive/folders/..." style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeAddDriveAccountModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">+ Hubungkan Akun</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- RESET PASSWORD POPUP MODAL -->
+<div class="luxury-overlay" id="resetPasswordOverlay">
+  <div class="luxury-modal" style="max-width: 440px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        🔑 Reset Kata Sandi User
+      </h3>
+      <button onclick="closeResetPasswordModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form onsubmit="handleResetUserPasswordSubmit(event)">
+      <input type="hidden" id="resetTargetUserId">
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Username Pengguna</label>
+        <input type="text" id="resetTargetUsername" readonly style="width: 100%; background: rgba(255,255,255,0.05); border: 0.5px solid var(--border); border-radius: 5px; padding: 9px 12px; color: var(--muted1); font-size: 12px; font-weight: 600;">
+      </div>
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Kata Sandi Baru</label>
+        <div class="form-input-wrap">
+          <input type="password" id="resetNewPasswordInput" placeholder="Masukkan kata sandi baru..." required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+          <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('resetNewPasswordInput', this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeResetPasswordModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">Simpan Sandi Baru</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleAdminSidebar() {
+    if (window.innerWidth <= 900) {
+      document.body.classList.toggle('sidebar-open-mobile');
+    } else {
+      document.body.classList.toggle('sidebar-collapsed');
+      const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+      localStorage.setItem('admin_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+    }
+  }
+
+  // Restore saved sidebar collapsed state on desktop
+  (function initSidebarState() {
+    if (window.innerWidth > 900 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
+      document.body.classList.add('sidebar-collapsed');
+    }
+  })();
+
+  function switchSidebarMenu(menuName) {
+    if (window.innerWidth <= 900) {
+      document.body.classList.remove('sidebar-open-mobile');
+    }
+    document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+
+    document.getElementById('menu-' + menuName).classList.add('active');
+    document.getElementById('panel-' + menuName).classList.add('active');
+
+    // Update Topbar Title
+    const titleEl = document.getElementById('pageTitle');
+    if (menuName === 'gallery') {
+      titleEl.textContent = 'Kelola Gallery';
+    } else if (menuName === 'storage') {
+      titleEl.textContent = 'Kelola Drive';
+    } else if (menuName === 'users') {
+      titleEl.textContent = 'Kelola Akun User';
+    } else if (menuName === 'logs') {
+      titleEl.textContent = 'Log Login User';
+      renderLoginLogsUI();
+      setTimeout(() => initLogCharts(window.allFetchedLogs), 50);
+    }
+  }
+
+  function extractGDriveID(inputEl, displayId) {
+    const val = inputEl.value.trim();
+    const displayEl = document.getElementById(displayId);
+    if (!val) {
+      if (displayEl) displayEl.textContent = '-';
+      return;
+    }
+    const match = val.match(/[-\w]{25,}/);
+    if (match && displayEl) {
+      displayEl.textContent = match[0];
+    } else if (displayEl) {
+      displayEl.textContent = 'ID tidak terdeteksi';
+    }
+  }
+
+  function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>`;
+    } else {
+      input.type = 'password';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>`;
+    }
+  }
+
+  function checkAdminSession() {
+    const sessionStr = localStorage.getItem('user_session');
+    if (!sessionStr) {
+      window.location.href = '../login.html';
+      return;
+    }
+    try {
+      const session = JSON.parse(sessionStr);
+      if (Date.now() >= session.expiry || session.role !== 'admin') {
+        localStorage.removeItem('user_session');
+        window.location.href = '../login.html';
+      }
+    } catch (e) {
+      localStorage.removeItem('user_session');
+      window.location.href = '../login.html';
+    }
+  }
+  checkAdminSession();
+
+  function logoutAdmin() {
+    if (window.AuthService) {
+      AuthService.logout();
+    } else {
+      localStorage.removeItem('user_session');
+      window.location.href = '../login.html';
+    }
+  }
+
+  // Edit Album Modal Functions
+  function openEditAlbumModal(title, category, count, coverUrl, driveUrl, description) {
+    document.getElementById('editJudul').value = title || '';
+    document.getElementById('editKategori').value = (category || 'wisuda').toLowerCase();
+    document.getElementById('editJumlah').value = count || 100;
+    document.getElementById('editCover').value = coverUrl || '';
+    document.getElementById('editDrive').value = driveUrl || '';
+    document.getElementById('editDeskripsi').value = description || '';
+
+    const overlay = document.getElementById('editAlbumOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeEditAlbumModal() {
+    const overlay = document.getElementById('editAlbumOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function handleSaveEditAlbum(e) {
+    e.preventDefault();
+    closeEditAlbumModal();
+    showToast('Perubahan data album berhasil disimpan!', 'success');
+  }
+
+  // Dynamic Category Management Logic
+  let categoriesList = [
+    { id: 'wisuda', name: 'Wisuda', usedCount: 1 },
+    { id: 'osis', name: 'OSIS', usedCount: 1 },
+    { id: 'olahraga', name: 'Olahraga', usedCount: 0 },
+    { id: 'seni', name: 'Seni Budaya', usedCount: 0 },
+    { id: 'tour', name: 'Study Tour', usedCount: 0 },
+    { id: 'lomba', name: 'Lomba', usedCount: 0 }
+  ];
+
+  function renderCategoryDropdowns() {
+    const selects = ['selectKategori', 'editKategori'];
+    selects.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const currentVal = el.value;
+      el.innerHTML = categoriesList.map(c => `<option value="${c.id}">${c.name}</option>`).join('') +
+        `<option value="__manage_categories__">+ Kelola / Tambah Kategori...</option>`;
+      if (currentVal && categoriesList.some(c => c.id === currentVal)) {
+        el.value = currentVal;
+      }
+    });
+  }
+
+  function handleCategorySelectChange(selectEl) {
+    if (selectEl.value === '__manage_categories__') {
+      selectEl.selectedIndex = 0;
+      openManageCategoriesModal();
+    }
+  }
+
+  function openManageCategoriesModal() {
+    renderCategoryListUI();
+    const overlay = document.getElementById('manageCategoryOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeManageCategoriesModal() {
+    const overlay = document.getElementById('manageCategoryOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function renderCategoryListUI() {
+    const container = document.getElementById('categoryListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    categoriesList.forEach((cat, index) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: var(--deep); border: 0.5px solid var(--border); padding: 8px 12px; border-radius: 6px;';
+      
+      const isUsed = cat.usedCount > 0;
+      const usedBadge = isUsed ? `<span style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Digunakan (${cat.usedCount})</span>` : '';
+
+      row.innerHTML = `
+        <div style="display: flex; align-items: center;">
+          <span style="font-size: 12px; color: var(--white); font-weight: 500;">${cat.name}</span>
+          ${usedBadge}
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="action-btn" onclick="editCategoryName(${index})" style="padding: 3px 8px; font-size: 9px;">Edit</button>
+          ${isUsed ? 
+            `<button type="button" class="action-btn" onclick="showLuxuryModal({ title: 'Kategori Digunakan', message: 'Kategori <strong>${cat.name}</strong> sedang digunakan oleh album foto aktif sehingga belum dapat dihapus.', type: 'warning' })" style="padding: 3px 8px; font-size: 9px; opacity: 0.5;">Hapus</button>` :
+            `<button type="button" class="action-btn delete" onclick="deleteCategoryItem(${index})" style="padding: 3px 8px; font-size: 9px;">Hapus</button>`
+          }
+        </div>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function addNewCategory() {
+    const input = document.getElementById('newCategoryInput');
+    const val = input.value.trim();
+    if (!val) {
+      showToast('Nama kategori tidak boleh kosong', 'error');
+      return;
+    }
+    const id = val.toLowerCase().replace(/\s+/g, '-');
+    if (categoriesList.some(c => c.id === id || c.name.toLowerCase() === val.toLowerCase())) {
+      showToast('Kategori ini sudah ada', 'warning');
+      return;
+    }
+    categoriesList.push({ id, name: val, usedCount: 0 });
+    input.value = '';
+    renderCategoryDropdowns();
+    renderCategoryListUI();
+    showToast(`Kategori "${val}" berhasil ditambahkan!`, 'success');
+  }
+
+  function editCategoryName(index) {
+    const cat = categoriesList[index];
+    showLuxuryModal({
+      title: 'Edit Nama Kategori',
+      message: `Masukkan nama baru untuk kategori <strong>${cat.name}</strong>:`,
+      type: 'info',
+      confirmText: 'Simpan',
+      onConfirm: () => {
+        const inputName = prompt('Nama baru kategori:', cat.name);
+        if (inputName && inputName.trim()) {
+          cat.name = inputName.trim();
+          renderCategoryDropdowns();
+          renderCategoryListUI();
+          showToast('Nama kategori berhasil diperbarui!', 'success');
+        }
+      }
+    });
+  }
+
+  function deleteCategoryItem(index) {
+    const cat = categoriesList[index];
+    if (cat.usedCount > 0) {
+      showLuxuryModal({
+        title: 'Kategori Digunakan',
+        message: `Kategori <strong>${cat.name}</strong> sedang digunakan oleh album foto sehingga tidak dapat dihapus.`,
+        type: 'warning'
+      });
+      return;
+    }
+    showLuxuryModal({
+      title: 'Hapus Kategori',
+      message: `Apakah Anda yakin ingin menghapus kategori <strong>${cat.name}</strong>?`,
+      type: 'danger',
+      confirmText: 'Hapus',
+      cancelText: 'Batal',
+      onConfirm: () => {
+        categoriesList.splice(index, 1);
+        renderCategoryDropdowns();
+        renderCategoryListUI();
+        showToast('Kategori berhasil dihapus', 'success');
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderCategoryDropdowns();
+    renderDriveExplorerUI();
+    renderUserListUI();
+    renderLoginLogsUI();
+
+    const session = typeof getUserSession === 'function' ? getUserSession() : null;
+    if (session) {
+      const nameEl = document.getElementById('adminSidebarName');
+      const avatarEl = document.getElementById('adminSidebarAvatar');
+      const rawName = session.displayName || session.name || session.user || 'Administrator';
+      if (nameEl) nameEl.textContent = rawName;
+      if (avatarEl) {
+        if (session.avatar && (session.avatar.startsWith('http') || session.avatar.startsWith('data:') || session.avatar.startsWith('.'))) {
+          avatarEl.innerHTML = `<img src="${session.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else if (typeof getFirstName === 'function') {
+          avatarEl.textContent = getFirstName(rawName).charAt(0);
+        }
+      }
+    }
+  });
+
+  // In-App Google Drive File Explorer Data & Functions
+  let currentExplorerAccount = 'drive.wisuda.smapsi@gmail.com';
+  let driveDataStore = {
+    'drive.wisuda.smapsi@gmail.com': {
+      accountName: 'Wisuda',
+      folders: [
+        { id: 'f1', name: 'Wisuda Angkatan 2024', itemsCount: 248, date: '14 Mei 2024' },
+        { id: 'f2', name: 'Gladi Bersih Wisuda', itemsCount: 64, date: '12 Mei 2024' },
+        { id: 'f3', name: 'Foto Studio Kelompok', itemsCount: 92, date: '15 Mei 2024' },
+        { id: 'f4', name: 'Pentas Seni Perpisahan', itemsCount: 110, date: '14 Mei 2024' }
+      ],
+      files: [
+        { id: 'img1', name: 'wisuda-prosesi-01.jpg', size: '2.4 MB', img: '../assets/wisuda-all.JPG' },
+        { id: 'img2', name: 'wisuda-juara-umum.jpg', size: '3.1 MB', img: '../assets/wisuda-juara.jpg' },
+        { id: 'img3', name: 'wisuda-kelas12-ipa.jpg', size: '2.8 MB', img: '../assets/wisuda-kelas12.jpg' }
+      ]
+    },
+    'drive.osis.smapsi@gmail.com': {
+      accountName: 'OSIS',
+      folders: [
+        { id: 'f5', name: 'Pelantikan OSIS 2024', itemsCount: 64, date: '20 Feb 2024' },
+        { id: 'f6', name: 'Rapat Kerja Pengurus', itemsCount: 32, date: '10 Feb 2024' },
+        { id: 'f7', name: 'Pentas Seni (Pensi)', itemsCount: 178, date: '11 Nov 2023' }
+      ],
+      files: [
+        { id: 'img4', name: 'osis-pelantikan-01.jpg', size: '1.8 MB', img: '../assets/heroimages-osis.jpg' },
+        { id: 'img5', name: 'osis-pensi-tari.jpg', size: '2.2 MB', img: '../assets/heroimages-tari.jpg' }
+      ]
+    },
+    'drive.olahraga.smapsi@gmail.com': {
+      accountName: 'Olahraga',
+      folders: [
+        { id: 'f8', name: 'Turnamen Futsal Cup 2024', itemsCount: 92, date: '05 Apr 2024' },
+        { id: 'f9', name: 'Lomba Basket Inter-School', itemsCount: 45, date: '18 Mar 2024' }
+      ],
+      files: [
+        { id: 'img6', name: 'futsal-final-juara.jpg', size: '2.0 MB', img: '../assets/heroimages-labipa.jpg' }
+      ]
+    }
+  };
+
+  function switchDriveExplorerAccount(email) {
+    currentExplorerAccount = email;
+    const label = document.getElementById('currentAccountLabel');
+    if (label) label.textContent = email;
+    renderDriveExplorerUI();
+  }
+
+  function renderDriveExplorerUI() {
+    const data = driveDataStore[currentExplorerAccount] || {
+      accountName: 'Akun Drive',
+      folders: [
+        { id: 'f_default', name: 'Folder Utama', itemsCount: 12, date: 'Hari ini' }
+      ],
+      files: [
+        { id: 'img_def', name: 'foto-sampel.jpg', size: '1.5 MB', img: '../assets/wisuda-all.JPG' }
+      ]
+    };
+
+    // Render Folder Count & Folders Grid
+    const folderCountBadge = document.getElementById('folderCountBadge');
+    if (folderCountBadge) folderCountBadge.textContent = `${data.folders.length} Folder`;
+
+    const folderGrid = document.getElementById('driveFolderGrid');
+    if (folderGrid) {
+      folderGrid.innerHTML = '';
+      data.folders.forEach((f, idx) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: var(--deep); border: 0.5px solid var(--border); border-radius: 6px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.25s, transform 0.2s;';
+        card.onmouseenter = () => { card.style.borderColor = 'rgba(255,255,255,0.3)'; card.style.transform = 'translateY(-2px)'; };
+        card.onmouseleave = () => { card.style.borderColor = 'var(--border)'; card.style.transform = 'none'; };
+
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+            <span style="font-size: 20px; flex-shrink: 0;">📁</span>
+            <div style="overflow: hidden;">
+              <div style="font-size: 11.5px; color: var(--white); font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${f.name}</div>
+              <div style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2); margin-top: 2px;">${f.itemsCount} File · ${f.date}</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px; flex-shrink: 0;">
+            <button type="button" class="action-btn" onclick="renameDriveFolder(${idx})" style="padding: 3px 6px; font-size: 8.5px;" title="Edit Nama">✏️</button>
+            <button type="button" class="action-btn delete" onclick="deleteDriveFolder(${idx})" style="padding: 3px 6px; font-size: 8.5px;" title="Hapus Folder">🗑️</button>
+          </div>
+        `;
+        folderGrid.appendChild(card);
+      });
+    }
+
+    // Render File Count & Files Grid
+    const fileCountBadge = document.getElementById('fileCountBadge');
+    if (fileCountBadge) fileCountBadge.textContent = `${data.files.length} File`;
+
+    const fileGrid = document.getElementById('driveFileGrid');
+    if (fileGrid) {
+      fileGrid.innerHTML = '';
+      data.files.forEach((file, idx) => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background: var(--deep); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.25s;';
+        card.onmouseenter = () => card.style.borderColor = 'rgba(255,255,255,0.3)';
+        card.onmouseleave = () => card.style.borderColor = 'var(--border)';
+
+        card.innerHTML = `
+          <div style="height: 100px; border-radius: 4px; background-image: url('${file.img}'); background-size: cover; background-position: center; border: 0.5px solid var(--border);"></div>
+          <div style="overflow: hidden;">
+            <div style="font-size: 11px; color: var(--white); font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${file.name}</div>
+            <div style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2);">${file.size}</div>
+          </div>
+          <div style="display: flex; gap: 4px; justify-content: flex-end;">
+            <button type="button" class="action-btn" onclick="renameDriveFile(${idx})" style="padding: 3px 6px; font-size: 8.5px;">Edit</button>
+            <button type="button" class="action-btn delete" onclick="deleteDriveFile(${idx})" style="padding: 3px 6px; font-size: 8.5px;">Hapus</button>
+          </div>
+        `;
+        fileGrid.appendChild(card);
+      });
+    }
+  }
+
+  // Add Drive Account Functions
+  function openAddDriveAccountModal() {
+    document.getElementById('newAccountEmail').value = '';
+    document.getElementById('newAccountLabel').value = '';
+    document.getElementById('newAccountFolderUrl').value = '';
+    const overlay = document.getElementById('addDriveAccountOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeAddDriveAccountModal() {
+    const overlay = document.getElementById('addDriveAccountOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  let totalConnectedDriveAccounts = 10;
+
+  function handleAddDriveAccount(e) {
+    e.preventDefault();
+    const email = document.getElementById('newAccountEmail').value.trim();
+    const labelName = document.getElementById('newAccountLabel').value.trim();
+
+    if (!email || !labelName) return;
+
+    totalConnectedDriveAccounts++;
+
+    // 1. Add to Data Store
+    if (!driveDataStore[email]) {
+      driveDataStore[email] = {
+        accountName: labelName,
+        folders: [
+          { id: 'f_new1', name: `Folder ${labelName}`, itemsCount: 1, date: 'Hari ini' }
+        ],
+        files: [
+          { id: 'img_new1', name: 'sampel-dokumentasi.jpg', size: '1.9 MB', img: '../assets/wisuda-all.JPG' }
+        ]
+      };
+    }
+
+    // 2. Add to Account Selector Select Dropdown
+    const select = document.getElementById('explorerAccountSelect');
+    if (select) {
+      const opt = document.createElement('option');
+      opt.value = email;
+      opt.textContent = `${email} (${labelName})`;
+      select.appendChild(opt);
+      select.value = email;
+      switchDriveExplorerAccount(email);
+    }
+
+    // 3. Update Storage Stats Text
+    const totalCountText = document.getElementById('totalAccountCountText');
+    const totalCountSub = document.getElementById('totalAccountCountSub');
+    const totalStorageText = document.getElementById('totalStorageGBText');
+
+    const totalGB = totalConnectedDriveAccounts * 15;
+    if (totalCountText) totalCountText.textContent = totalConnectedDriveAccounts;
+    if (totalCountSub) totalCountSub.textContent = totalConnectedDriveAccounts;
+    if (totalStorageText) totalStorageText.textContent = `${totalGB}.0 GB`;
+
+    closeAddDriveAccountModal();
+    showToast(`Akun ${email} (+15 GB) berhasil dihubungkan! Total Penyimpanan: ${totalGB} GB`, 'success');
+  }
+
+  // Create Folder Functions
+  function openCreateFolderModal() {
+    document.getElementById('newFolderNameInput').value = '';
+    const overlay = document.getElementById('createFolderOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeCreateFolderModal() {
+    const overlay = document.getElementById('createFolderOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function handleCreateDriveFolder(e) {
+    e.preventDefault();
+    const name = document.getElementById('newFolderNameInput').value.trim();
+    if (!name) return;
+
+    if (!driveDataStore[currentExplorerAccount]) {
+      driveDataStore[currentExplorerAccount] = { accountName: 'Drive', folders: [], files: [] };
+    }
+    driveDataStore[currentExplorerAccount].folders.unshift({
+      id: 'f_' + Date.now(),
+      name: name,
+      itemsCount: 0,
+      date: 'Hari ini'
+    });
+
+    closeCreateFolderModal();
+    renderDriveExplorerUI();
+    showToast(`Folder "${name}" berhasil dibuat di Google Drive!`, 'success');
+  }
+
+  // Upload Photo Functions
+  function openUploadPhotoModal() {
+    document.getElementById('uploadFileNameLabel').textContent = '';
+    document.getElementById('driveFileInput').value = '';
+    const overlay = document.getElementById('uploadPhotoOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeUploadPhotoModal() {
+    const overlay = document.getElementById('uploadPhotoOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  function updateUploadFileLabel(input) {
+    const label = document.getElementById('uploadFileNameLabel');
+    if (input.files && input.files[0]) {
+      label.textContent = `File terpilih: ${input.files[0].name}`;
+    }
+  }
+
+  function handleUploadDrivePhoto(e) {
+    e.preventDefault();
+    const input = document.getElementById('driveFileInput');
+    const fileName = input.files && input.files[0] ? input.files[0].name : 'foto-baru-' + Math.floor(Math.random() * 100) + '.jpg';
+
+    if (!driveDataStore[currentExplorerAccount]) {
+      driveDataStore[currentExplorerAccount] = { accountName: 'Drive', folders: [], files: [] };
+    }
+    driveDataStore[currentExplorerAccount].files.unshift({
+      id: 'img_' + Date.now(),
+      name: fileName,
+      size: '2.5 MB',
+      img: '../assets/wisuda-all.JPG'
+    });
+
+    closeUploadPhotoModal();
+    renderDriveExplorerUI();
+    showToast(`Foto "${fileName}" berhasil di-upload ke Google Drive!`, 'success');
+  }
+
+  // Rename & Delete Functions
+  function renameDriveFolder(index) {
+    const data = driveDataStore[currentExplorerAccount];
+    if (!data || !data.folders[index]) return;
+    const folder = data.folders[index];
+    
+    showLuxuryModal({
+      title: 'Edit Nama Folder Drive',
+      message: `Masukkan nama baru untuk folder <strong>${folder.name}</strong>:`,
+      type: 'info',
+      confirmText: 'Simpan',
+      onConfirm: () => {
+        const newName = prompt('Nama baru folder:', folder.name);
+        if (newName && newName.trim()) {
+          folder.name = newName.trim();
+          renderDriveExplorerUI();
+          showToast('Nama folder berhasil diperbarui!', 'success');
+        }
+      }
+    });
+  }
+
+  function deleteDriveFolder(index) {
+    const data = driveDataStore[currentExplorerAccount];
+    if (!data || !data.folders[index]) return;
+    const folder = data.folders[index];
+
+    showLuxuryModal({
+      title: 'Hapus Folder Drive',
+      message: `Apakah Anda yakin ingin menghapus folder <strong>${folder.name}</strong> beserta seluruh isinya dari Google Drive?`,
+      type: 'danger',
+      confirmText: 'Hapus Folder',
+      cancelText: 'Batal',
+      onConfirm: () => {
+        data.folders.splice(index, 1);
+        renderDriveExplorerUI();
+        showToast('Folder Google Drive berhasil dihapus!', 'success');
+      }
+    });
+  }
+
+  function renameDriveFile(index) {
+    const data = driveDataStore[currentExplorerAccount];
+    if (!data || !data.files[index]) return;
+    const file = data.files[index];
+
+    const newName = prompt('Nama baru file foto:', file.name);
+    if (newName && newName.trim()) {
+      file.name = newName.trim();
+      renderDriveExplorerUI();
+      showToast('Nama file foto berhasil diperbarui!', 'success');
+    }
+  }
+
+  function deleteDriveFile(index) {
+    const data = driveDataStore[currentExplorerAccount];
+    if (!data || !data.files[index]) return;
+    const file = data.files[index];
+
+    showLuxuryModal({
+      title: 'Hapus Foto Drive',
+      message: `Apakah Anda yakin ingin menghapus foto <strong>${file.name}</strong> dari Google Drive?`,
+      type: 'danger',
+      confirmText: 'Hapus Foto',
+      cancelText: 'Batal',
+      onConfirm: () => {
+        data.files.splice(index, 1);
+        renderDriveExplorerUI();
+        showToast('Foto berhasil dihapus dari Google Drive!', 'success');
+      }
+    });
+  }
+
+  // User Management State & Pagination
+  let currentUserSearchQuery = '';
+  let currentUserPage = 1;
+  let usersPerPage = 25;
+  let allFetchedUsers = [];
+
+  function handleUserLimitChange(limitVal) {
+    usersPerPage = parseInt(limitVal) || 25;
+    currentUserPage = 1;
+    renderUserListUI();
+  }
+
+  async function renderUserListUI() {
+    const tbody = document.getElementById('userTableBody');
+    if (!tbody) return;
+
+    if (window.UserService) {
+      allFetchedUsers = await UserService.getUsers();
+    } else {
+      allFetchedUsers = [
+        { id: 'usr_1', username: 'admin_sekolah', role: 'admin', is_active: true },
+        { id: 'usr_2', username: 'siswa_xi_ipa1', role: 'siswa', is_active: true },
+        { id: 'usr_3', username: 'guru_bhs_indo', role: 'guru', is_active: true }
+      ];
+    }
+    window.allFetchedUsers = allFetchedUsers;
+
+    // Filter berdasarkan query pencarian
+    const filtered = allFetchedUsers.filter(u => {
+      const q = currentUserSearchQuery.toLowerCase();
+      return (u.username || '').toLowerCase().includes(q) || (u.role || '').toLowerCase().includes(q);
+    });
+
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / usersPerPage) || 1;
+
+    if (currentUserPage > totalPages) currentUserPage = totalPages;
+    if (currentUserPage < 1) currentUserPage = 1;
+
+    const startIndex = (currentUserPage - 1) * usersPerPage;
+    const endIndex = Math.min(startIndex + usersPerPage, totalItems);
+    const pageUsers = filtered.slice(startIndex, endIndex);
+
+    tbody.innerHTML = '';
+    if (pageUsers.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--muted1); padding: 24px; font-family: var(--mono); font-size: 11px;">Tidak ada akun user yang cocok dengan pencarian.</td></tr>`;
+    } else {
+      pageUsers.forEach((user) => {
+        const tr = document.createElement('tr');
+        
+        let roleBadge = '<span class="badge badge-info">Siswa</span>';
+        if (user.role === 'admin') roleBadge = '<span class="badge badge-warning">Admin</span>';
+        if (user.role === 'guru') roleBadge = '<span class="badge badge-info" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">Guru</span>';
+
+        const statusBadge = user.is_active 
+          ? '<span class="badge badge-success">Aktif</span>' 
+          : '<span class="badge badge-danger">Nonaktif</span>';
+
+        const toggleActionText = user.is_active ? 'Nonaktifkan' : 'Aktifkan';
+        const toggleActionClass = user.is_active ? 'delete' : '';
+
+        tr.innerHTML = `
+          <td><code>#${user.id ? user.id.substring(0, 6) : '000000'}</code></td>
+          <td><strong>${user.username}</strong></td>
+          <td>${roleBadge}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="action-btn" onclick="openResetPasswordModal('${user.id}', '${user.username}')">Reset Sandi</button>
+            <button class="action-btn ${toggleActionClass}" onclick="handleToggleUserStatus('${user.id}', ${user.is_active}, '${user.username}')">${toggleActionText}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update Informasi Pagination & Kontrol Tombol
+    const infoEl = document.getElementById('userPaginationInfo');
+    if (infoEl) {
+      if (totalItems === 0) {
+        infoEl.textContent = 'Menampilkan 0 akun';
+      } else {
+        infoEl.textContent = `Menampilkan ${startIndex + 1}-${endIndex} dari ${totalItems} Akun`;
+      }
+    }
+
+    const indicatorEl = document.getElementById('userPageIndicator');
+    if (indicatorEl) indicatorEl.textContent = `Halaman ${currentUserPage} dari ${totalPages}`;
+
+    const btnPrev = document.getElementById('btnPrevUserPage');
+    const btnNext = document.getElementById('btnNextUserPage');
+    if (btnPrev) btnPrev.disabled = (currentUserPage <= 1);
+    if (btnNext) btnNext.disabled = (currentUserPage >= totalPages);
+  }
+
+  function handleUserSearchInput(val) {
+    currentUserSearchQuery = val;
+    currentUserPage = 1;
+    renderUserListUI();
+  }
+
+  function changeUserPage(delta) {
+    currentUserPage += delta;
+    renderUserListUI();
+  }
+
+  async function handleCreateUserSubmit(e) {
+    e.preventDefault();
+    const username = document.getElementById('newUsernameInput').value.trim();
+    const password = document.getElementById('adminNewPw').value.trim();
+    const role = document.getElementById('newUserRoleSelect').value;
+
+    if (!username || !password) return;
+
+    let res = { success: true };
+    if (window.UserService) {
+      res = await UserService.createUser(username, password, role);
+    }
+
+    if (res.success) {
+      document.getElementById('newUsernameInput').value = '';
+      document.getElementById('adminNewPw').value = '';
+      await renderUserListUI();
+      showToast(`Akun user "${username}" berhasil ditambahkan ke database!`, 'success');
+    } else {
+      showLuxuryModal({
+        title: 'Gagal Menambah User',
+        message: `Terjadi kesalahan saat menyimpan ke Supabase: <strong>${res.message}</strong>`,
+        type: 'error'
+      });
+    }
+  }
+
+  async function handleToggleUserStatus(id, currentStatus, username) {
+    const actionText = currentStatus ? 'menonaktifkan' : 'mengaktifkan kembali';
+    showLuxuryModal({
+      title: `${currentStatus ? 'Nonaktifkan' : 'Aktifkan'} Akun User`,
+      message: `Apakah Anda yakin ingin ${actionText} akun user <strong>${username}</strong>?`,
+      type: currentStatus ? 'danger' : 'info',
+      confirmText: currentStatus ? 'Nonaktifkan' : 'Aktifkan',
+      onConfirm: async () => {
+        if (window.UserService) {
+          await UserService.toggleUserStatus(id, currentStatus);
+        }
+        await renderUserListUI();
+        showToast(`Akun user "${username}" berhasil ${currentStatus ? 'dinonaktifkan' : 'diaktifkan kembali'}!`, 'info');
+      }
+    });
+  }
+
+  // Reset Password Functions
+  function openResetPasswordModal(id, username) {
+    document.getElementById('resetTargetUserId').value = id;
+    document.getElementById('resetTargetUsername').value = username;
+    document.getElementById('resetNewPasswordInput').value = '';
+
+    const overlay = document.getElementById('resetPasswordOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeResetPasswordModal() {
+    const overlay = document.getElementById('resetPasswordOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  async function handleResetUserPasswordSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('resetTargetUserId').value;
+    const username = document.getElementById('resetTargetUsername').value;
+    const newPassword = document.getElementById('resetNewPasswordInput').value.trim();
+
+    if (!newPassword) {
+      showToast('Kata sandi baru tidak boleh kosong', 'warning');
+      return;
+    }
+
+    closeResetPasswordModal();
+    showToast(`Kata sandi untuk user "${username}" berhasil diperbarui ke password baru!`, 'success');
+  }
+
+  // Log Login Management State & Pagination
+  let currentLogSearchQuery = '';
+  let currentLogPage = 1;
+  let logsPerPage = 10;
+  let allFetchedLogs = [];
+
+  function handleLogSearchInput(val) {
+    currentLogSearchQuery = val;
+    currentLogPage = 1;
+    renderLoginLogsUI();
+  }
+
+  function handleLogLimitChange(limitVal) {
+    logsPerPage = parseInt(limitVal) || 10;
+    currentLogPage = 1;
+    renderLoginLogsUI();
+  }
+
+  function changeLogPage(delta) {
+    currentLogPage += delta;
+    renderLoginLogsUI();
+  }
+
+  // Helper to determine accurate user role from user profiles or log properties
+  function getUserRole(log) {
+    if (!log) return 'user';
+    if (log.role && log.role.toLowerCase() !== 'user') return log.role;
+    
+    const username = (log.username || '').toLowerCase().trim();
+    if (username.includes('admin')) return 'admin';
+
+    // Cross-reference with allFetchedUsers registered user profile list
+    const users = window.allFetchedUsers || allFetchedUsers || [];
+    const foundUser = users.find(u => (u.username || '').toLowerCase().trim() === username);
+    if (foundUser && foundUser.role) {
+      return foundUser.role;
+    }
+    return log.role || 'user';
+  }
+
+  function isLogAdmin(log) {
+    if (!log) return false;
+    const role = (getUserRole(log) || '').toLowerCase().trim();
+    const username = (log.username || '').toLowerCase().trim();
+    return role.includes('admin') || username.includes('admin');
+  }
+
+  // Render Live System Login Logs
+  async function renderLoginLogsUI() {
+    const tbody = document.getElementById('loginLogsTableBody');
+    if (!tbody) return;
+
+    if (window.UserService && (!window.allFetchedUsers || window.allFetchedUsers.length === 0)) {
+      window.allFetchedUsers = await UserService.getUsers();
+    }
+
+    if (window.AuthService && AuthService.getLogs) {
+      allFetchedLogs = await AuthService.getLogs();
+    } else {
+      allFetchedLogs = [
+        { created_at: new Date().toISOString(), username: 'admin_sekolah', status: 'Berhasil', ip_address: '192.168.1.15', device_info: 'Chrome (Windows 11)' },
+        { created_at: new Date(Date.now() - 3600000).toISOString(), username: 'hilmanfauziabdilah', status: 'Berhasil', ip_address: '127.0.0.1', device_info: 'Chrome (Desktop)' }
+      ];
+    }
+
+    // Filter berdasarkan query pencarian
+    const q = currentLogSearchQuery.toLowerCase().trim();
+    let filtered = allFetchedLogs;
+    if (q) {
+      filtered = allFetchedLogs.filter(l => 
+        (l.username || '').toLowerCase().includes(q) ||
+        (getUserRole(l) || '').toLowerCase().includes(q) ||
+        (l.ip_address || '').toLowerCase().includes(q) ||
+        (l.device_info || '').toLowerCase().includes(q) ||
+        (l.status || '').toLowerCase().includes(q)
+      );
+    }
+
+    const totalItems = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / logsPerPage));
+    if (currentLogPage > totalPages) currentLogPage = totalPages;
+    if (currentLogPage < 1) currentLogPage = 1;
+
+    const startIndex = (currentLogPage - 1) * logsPerPage;
+    const endIndex = Math.min(startIndex + logsPerPage, totalItems);
+    const pageLogs = filtered.slice(startIndex, endIndex);
+
+    tbody.innerHTML = '';
+    if (pageLogs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted1); padding: 24px; font-family: var(--mono); font-size: 11px;">Tidak ada log login yang cocok dengan pencarian.</td></tr>`;
+    } else {
+      pageLogs.forEach((log) => {
+        const tr = document.createElement('tr');
+        const timeStr = log.created_at ? parseLogDate(log.created_at).toLocaleString('id-ID') : 'Baru saja';
+        
+        const isAdmin = isLogAdmin(log);
+        const rawRole = getUserRole(log);
+        const roleLabel = isAdmin ? 'Admin' : (rawRole && rawRole.toLowerCase() !== 'user' ? rawRole : 'User');
+        const roleBadge = isAdmin
+          ? `<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 0.5px solid rgba(245, 158, 11, 0.3);">Admin</span>`
+          : `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 0.5px solid rgba(16, 185, 129, 0.25);">${roleLabel}</span>`;
+
+        const statusBadge = log.status && log.status.includes('Berhasil') 
+          ? `<span class="badge badge-success">${log.status}</span>`
+          : `<span class="badge badge-danger">${log.status || 'Gagal'}</span>`;
+
+        tr.innerHTML = `
+          <td>${timeStr}</td>
+          <td>${log.username}</td>
+          <td>${roleBadge}</td>
+          <td>${statusBadge}</td>
+          <td><code>${log.ip_address || '127.0.0.1'}</code></td>
+          <td>${log.device_info || 'Chrome (Desktop)'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update Informasi Pagination & Kontrol Tombol
+    const infoEl = document.getElementById('logPaginationInfo');
+    if (infoEl) {
+      if (totalItems === 0) {
+        infoEl.textContent = 'Menampilkan 0 log';
+      } else {
+        infoEl.textContent = `Menampilkan ${startIndex + 1}-${endIndex} dari ${totalItems} Log`;
+      }
+    }
+
+    const indicatorEl = document.getElementById('logPageIndicator');
+    if (indicatorEl) indicatorEl.textContent = `Halaman ${currentLogPage} dari ${totalPages}`;
+
+    const btnPrev = document.getElementById('btnPrevLogPage');
+    window.allFetchedLogs = allFetchedLogs;
+    initLogCharts(allFetchedLogs);
+  }
+
+  // Helper for robust log date parsing
+  function parseLogDate(dateVal) {
+    if (!dateVal) return new Date();
+    if (dateVal instanceof Date) return dateVal;
+    let d = new Date(dateVal);
+    if (isNaN(d.getTime()) && typeof dateVal === 'string') {
+      const cleaned = dateVal.replace(/,/g, '').replace(/(\d+)\.(\d+)\.(\d+)/, '$1:$2:$3');
+      d = new Date(cleaned);
+    }
+    return isNaN(d.getTime()) ? new Date() : d;
+  }
+
+  // Chart.js Instances for Login Logs
+  let userLogChartInstance = null;
+  let adminLogChartInstance = null;
+
+  function initLogCharts(passedLogs) {
+    const userCanvas = document.getElementById('userLogChart');
+    const adminCanvas = document.getElementById('adminLogChart');
+    if (!userCanvas || !adminCanvas || typeof Chart === 'undefined') return;
+
+    const isLight = document.body.classList.contains('light-theme');
+    const textColor = isLight ? '#475569' : 'rgba(255, 255, 255, 0.7)';
+    const gridColor = isLight ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.06)';
+
+    // Date labels and matching date strings for last 7 days
+    const labels = [];
+    const dateStrings = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      labels.push(d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+      dateStrings.push(d.toDateString());
+    }
+
+    const daysUser = Array(7).fill(0);
+    const daysAdmin = Array(7).fill(0);
+    let totalToday = 0;
+    let totalUser = 0;
+    let totalAdmin = 0;
+
+    const todayStr = now.toDateString();
+    const logs = (passedLogs && Array.isArray(passedLogs)) ? passedLogs : (window.allFetchedLogs || allFetchedLogs || []);
+
+    logs.forEach(log => {
+      const logDate = parseLogDate(log.created_at);
+      const isAdmin = isLogAdmin(log);
+      const logDateStr = logDate.toDateString();
+
+      if (logDateStr === todayStr) {
+        totalToday++;
+      }
+
+      if (isAdmin) totalAdmin++;
+      else totalUser++;
+
+      const dayIdx = dateStrings.indexOf(logDateStr);
+      if (dayIdx !== -1) {
+        if (isAdmin) daysAdmin[dayIdx]++;
+        else daysUser[dayIdx]++;
+      }
+    });
+
+    // Update stat cards dynamically with exact actual log counts
+    const totalTodayEl = document.getElementById('logStatTotalToday');
+    const userCountEl = document.getElementById('logStatUserCount');
+    const adminCountEl = document.getElementById('logStatAdminCount');
+
+    if (totalTodayEl) totalTodayEl.textContent = totalToday;
+    if (userCountEl) userCountEl.textContent = totalUser;
+    if (adminCountEl) adminCountEl.textContent = totalAdmin;
+
+    let userCounts = daysUser;
+    let adminCounts = daysAdmin;
+
+    if (userLogChartInstance) userLogChartInstance.destroy();
+    if (adminLogChartInstance) adminLogChartInstance.destroy();
+
+    // Left Chart: User Log Trend (Emerald #10b981)
+    const ctxUser = userCanvas.getContext('2d');
+    const gradUser = ctxUser.createLinearGradient(0, 0, 0, 180);
+    gradUser.addColorStop(0, 'rgba(16, 185, 129, 0.32)');
+    gradUser.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+    userLogChartInstance = new Chart(userCanvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Login User',
+          data: userCounts,
+          borderColor: '#10b981',
+          borderWidth: 2.2,
+          backgroundColor: gradUser,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#10b981',
+          pointBorderColor: isLight ? '#ffffff' : '#18181c',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isLight ? '#ffffff' : '#1f2937',
+            titleColor: isLight ? '#0f172a' : '#f9fafb',
+            bodyColor: isLight ? '#334155' : '#e5e7eb',
+            borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              label: (ctx) => `  ${ctx.parsed.y} Sesi Login`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: gridColor, drawBorder: false },
+            ticks: { color: textColor, font: { family: 'DM Sans', size: 10.5 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: gridColor, drawBorder: false },
+            ticks: { color: textColor, font: { family: 'DM Sans', size: 10.5 }, precision: 0 }
+          }
+        }
+      }
+    });
+
+    // Right Chart: Admin Log Trend (Blue #3b82f6)
+    const ctxAdmin = adminCanvas.getContext('2d');
+    const gradAdmin = ctxAdmin.createLinearGradient(0, 0, 0, 180);
+    gradAdmin.addColorStop(0, 'rgba(59, 130, 246, 0.32)');
+    gradAdmin.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    adminLogChartInstance = new Chart(adminCanvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Login Admin',
+          data: adminCounts,
+          borderColor: '#3b82f6',
+          borderWidth: 2.2,
+          backgroundColor: gradAdmin,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3b82f6',
+          pointBorderColor: isLight ? '#ffffff' : '#18181c',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: isLight ? '#ffffff' : '#1f2937',
+            titleColor: isLight ? '#0f172a' : '#f9fafb',
+            bodyColor: isLight ? '#334155' : '#e5e7eb',
+            borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false,
+            callbacks: {
+              label: (ctx) => `  ${ctx.parsed.y} Sesi Admin`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: gridColor, drawBorder: false },
+            ticks: { color: textColor, font: { family: 'DM Sans', size: 10.5 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: gridColor, drawBorder: false },
+            ticks: { color: textColor, font: { family: 'DM Sans', size: 10.5 }, precision: 0 }
+          }
+        }
+      }
+    });
+  }
+
+  // THEME TOGGLE (DARK / LIGHT MODE)
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('admin_theme', isLight ? 'light' : 'dark');
+    updateThemeToggleUI(isLight);
+    initLogCharts(window.allFetchedLogs);
+    if (window.showToast) {
+      showToast(isLight ? 'Beralih ke Light Mode (Tema Terang)' : 'Beralih ke Dark Mode (Tema Gelap)', 'info');
+    }
+  }
+
+  function initTheme() {
+    const savedTheme = localStorage.getItem('admin_theme');
+    // Default to Light Mode unless explicitly saved as 'dark'
+    const isLight = savedTheme !== 'dark';
+    if (isLight) {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    updateThemeToggleUI(isLight);
+  }
+
+  function updateThemeToggleUI(isLight) {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+    if (isLight) {
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>`;
+      btn.title = "Beralih ke Dark Mode";
+    } else {
+      btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>`;
+      btn.title = "Beralih ke Light Mode";
+    }
+  }
+
+  // Execute theme initialization immediately
+  initTheme();
+</script>
+</body>
+</html>

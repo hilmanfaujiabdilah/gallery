@@ -1,0 +1,6 @@
+node_modules/
+.vscode/
+scratch_test_logs.js
+.DS_Store
+Thumbs.db
+*.log

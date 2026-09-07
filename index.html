@@ -8,7 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/popup.js"></script>
+<script src="js/profile-modal.js"></script>
 </head>
 <body>
 
@@ -24,9 +26,6 @@
 <!-- SCROLL PROGRESS -->
 <div class="scroll-progress" id="scrollProgress"></div>
 
-<!-- CURSOR -->
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
@@ -37,17 +36,66 @@
     Tutup
   </button>
   <div class="lightbox-content">
-    <span>Foto kegiatan sekolah</span>
+    <img id="lightboxImg" src="" alt="Preview Foto" class="lightbox-img">
   </div>
   <div class="lightbox-info">
-    <div class="lightbox-cat" id="lightboxCat">Kegiatan</div>
-    <div class="lightbox-title" id="lightboxTitle">Nama Kegiatan</div>
+    <div>
+      <div class="lightbox-cat" id="lightboxCat">Kegiatan</div>
+      <div class="lightbox-title" id="lightboxTitle">Nama Kegiatan</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-modal" id="loginModal">
+  <div class="login-modal-box">
+    <button class="login-modal-close" id="loginModalClose">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="0.8">
+        <path d="M1 1l12 12M13 1L1 13"/>
+      </svg>
+    </button>
+    <div class="login-modal-header">
+      <div class="login-pre">Akses Anggota</div>
+      <h3 class="login-modal-title">Masuk ke Gallery</h3>
+      <p class="login-modal-sub">Masukkan Username dan Password untuk mengakses galeri foto.</p>
+    </div>
+    <form class="login-modal-form" onsubmit="handleModalLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="modalUsername">Username</label>
+        <input type="text" id="modalUsername" class="form-input" placeholder="Masukkan username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="modalPassword">Password</label>
+        <div class="form-input-wrap">
+          <input type="password" id="modalPassword" class="form-input" placeholder="Masukkan password" required>
+          <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('modalPassword', this)" title="Tampilkan/Sembunyikan Password">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-options">
+        <label class="remember-me"><input type="checkbox" id="modalRememberMe"> Ingat saya</label>
+        <a href="#" class="forgot-link" onclick="event.preventDefault(); showLuxuryModal({ title: 'Bantuan Kata Sandi', message: 'Silakan hubungi administrator sekolah untuk reset kata sandi akun Anda.', type: 'info' });">Lupa sandi?</a>
+      </div>
+      <button type="submit" class="btn-submit">
+        Masuk Sekarang
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M1 7h12M8 2l5 5-5 5"/>
+        </svg>
+      </button>
+    </form>
+    <div class="login-modal-footer">
+      <span>Atau buka halaman login khusus: <a href="login.html">Halaman Login Fullscreen →</a></span>
+    </div>
   </div>
 </div>
 
 <!-- NAVIGATION -->
 <nav id="navbar">
-  <a href="#" class="nav-logo">
+  <a href="index.html" class="nav-logo">
     <img src="assets/logo osis.png" alt="Logo SMAPSI" class="nav-logo-img">
     SMAPSI <span>/ Gallery</span>
   </a>
@@ -59,7 +107,7 @@
     <li><a href="#gate">Tentang</a></li>
   </ul>
 
-  <a href="#gate" class="nav-cta">Masuk</a>
+  <a href="login.html" class="nav-cta">Masuk</a>
 
   <button class="nav-hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -73,7 +121,7 @@
   <a href="#gallery">Galeri</a>
   <a href="#kegiatan">Kegiatan</a>
   <a href="#gate">Tentang</a>
-  <a href="#gate" class="drawer-cta">Masuk Sekarang</a>
+  <a href="login.html" class="drawer-cta">Masuk Sekarang</a>
 </div>
 
 <!-- ══════════════════════════════
@@ -101,7 +149,7 @@
   </div>
 
   <div class="hero-images">
-    <div class="hero-img" data-cat="OSIS" data-title="OSIS Angkatan 2022" style="background-image: url('assets/heroimages-osis.jpg');">
+    <div class="hero-img" data-cat="OSIS" data-title="OSIS Angkatan 2022" data-img="assets/heroimages-osis.jpg" style="background-image: url('assets/heroimages-osis.jpg');">
       <div class="img-overlay"></div>
       <div class="img-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(240,239,233,0.6)" stroke-width="0.8">
@@ -110,30 +158,30 @@
       </div>
       <div class="img-label">OSIS · 2022</div>
     </div>
-    <div class="hero-img" data-cat="Seni Tari" data-title="Seni Tari 2022" style="background-image: url('assets/heroimages-tari.jpg');">
+    <div class="hero-img" data-cat="Seni Tari" data-title="Seni Tari 2022" data-img="assets/heroimages-tari.jpg" style="background-image: url('assets/heroimages-tari.jpg');">
       <div class="img-overlay"></div>
       <div class="img-label">Seni Tari · 2022</div>
     </div>
-    <div class="hero-img" data-cat="Teman Perpus" data-title="Teman Perpus 2023" style="background-image: url('assets/heroimages-perpus.jpg');">
+    <div class="hero-img" data-cat="Teman Perpus" data-title="Teman Perpus 2023" data-img="assets/heroimages-perpus.jpg" style="background-image: url('assets/heroimages-perpus.jpg');">
       <div class="img-overlay"></div>
       <div class="img-label">Teman Perpus · 2023</div>
     </div>
   </div>
 
   <div class="stats-strip">
-    <div class="stat-item reveal">
+    <div class="stat-item">
       <div class="stat-num" data-count="2400">0</div>
       <div class="stat-label">Total Foto</div>
     </div>
-    <div class="stat-item reveal reveal-delay-1">
+    <div class="stat-item">
       <div class="stat-num" data-count="48">0</div>
       <div class="stat-label">Kegiatan</div>
     </div>
-    <div class="stat-item reveal reveal-delay-2">
+    <div class="stat-item">
       <div class="stat-num" data-count="12">0</div>
       <div class="stat-label">Kategori</div>
     </div>
-    <div class="stat-item reveal reveal-delay-3">
+    <div class="stat-item">
       <div class="stat-num" data-count="13">0</div>
       <div class="stat-label">Tahun Ajaran</div>
     </div>
@@ -148,7 +196,6 @@
     <span class="sect-num">01</span>
     <span class="sect-title">Foto Terpilih</span>
     <div class="sect-line"></div>
-    <a href="#" class="sect-action">Lihat semua</a>
   </div>
 
   <div class="filter-row reveal reveal-delay-1">
@@ -162,78 +209,59 @@
   </div>
 
   <div class="masonry-grid reveal">
-    <div class="m-item" data-category="wisuda" data-title="Wisuda Angkatan 2024" data-cat-label="Wisuda">
-      <div class="photo-art">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-          <circle cx="20" cy="14" r="8"/><path d="M4 36c0-8.84 7.16-16 16-16s16 7.16 16 16"/>
-        </svg>
-      </div>
+    <div class="m-item" data-category="wisuda" data-title="Wisuda Angkatan 2024" data-cat-label="Wisuda" data-img="assets/wisuda-all.JPG">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Angkatan 2024 · 248 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="osis" data-title="Pelantikan OSIS 2024" data-cat-label="OSIS">
-      <div class="photo-art">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-          <path d="M18 3l4 8 9 1.3-6.5 6.3 1.5 9L18 23l-8 4.6 1.5-9L5 12.3 14 11z"/>
-        </svg>
-      </div>
+    <div class="m-item" data-category="osis" data-title="Pelantikan OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pelantikan · 64 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="tour" data-title="Study Tour Yogyakarta" data-cat-label="Study Tour">
-      <div class="photo-art">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-          <path d="M18 3C11 3 6 9 6 16c0 10 12 17 12 17s12-7 12-17c0-7-5-13-12-13z"/>
-          <circle cx="18" cy="16" r="4"/>
-        </svg>
-      </div>
+    <div class="m-item" data-category="tour" data-title="Study Tour Yogyakarta" data-cat-label="Study Tour" data-img="assets/heroimages-perpus.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Study Tour</span><div class="m-item-label">Yogyakarta · 201 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="olahraga" data-title="Turnamen Futsal 2024" data-cat-label="Olahraga">
-      <div class="photo-art">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-          <circle cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="5"/>
-          <path d="M16 4v5M16 23v5M4 16h5M23 16h5"/>
-        </svg>
-      </div>
+    <div class="m-item" data-category="olahraga" data-title="Turnamen Futsal 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Futsal · 92 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="seni" data-title="Pagelaran Seni Akhir Tahun" data-cat-label="Seni Budaya">
-      <div class="photo-art">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="rgba(240,239,233,1)" stroke-width="0.5">
-          <path d="M18 6c-3 0-12 9-12 18h24C30 15 21 6 18 6z"/>
-          <path d="M18 18v6M14 20h8"/>
-        </svg>
-      </div>
+    <div class="m-item" data-category="seni" data-title="Pagelaran Seni Akhir Tahun" data-cat-label="Seni Budaya" data-img="assets/heroimages-tari.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Seni</span><div class="m-item-label">Pagelaran · 134 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="lomba" data-title="Olimpiade Sains Nasional" data-cat-label="Lomba">
+    <div class="m-item" data-category="lomba" data-title="Olimpiade Sains Nasional" data-cat-label="Lomba" data-img="assets/wisuda-juara.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Lomba</span><div class="m-item-label">OSN · 86 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="osis" data-title="Pensi OSIS 2024" data-cat-label="OSIS">
+    <div class="m-item" data-category="osis" data-title="Pensi OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pensi · 178 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="wisuda" data-title="Perpisahan Kelas XII" data-cat-label="Wisuda">
+    <div class="m-item" data-category="wisuda" data-title="Perpisahan Kelas XII" data-cat-label="Wisuda" data-img="assets/wisuda-kelas12.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Perpisahan · 96 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="olahraga" data-title="Class Meeting 2024" data-cat-label="Olahraga">
+    <div class="m-item" data-category="olahraga" data-title="Class Meeting 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Class Meeting · 113 foto</div></div>
       </div>
+    </div>
+  </div>
+
+  <div class="gallery-login-cta reveal" style="display: grid; grid-template-columns: 1fr 1fr; margin-top: 36px;">
+    <div></div>
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <a href="#" id="seeAllGalleryBtn" onclick="handleSeeAllClick(event)" class="sect-action-prominent">
+        Lihat semua
+      </a>
     </div>
   </div>
 </section>
@@ -336,7 +364,7 @@
     <p class="gate-sub">Masuk dengan akun sekolah untuk mengakses seluruh arsip foto yang dikelompokkan per kegiatan dan tahun ajaran. Tersedia fitur unduh foto resolusi tinggi.</p>
   </div>
   <div class="gate-right reveal reveal-delay-2">
-    <a href="#" class="gate-btn">Masuk Sekarang</a>
+    <a href="login.html" class="gate-btn" id="gateBtn">Masuk Sekarang</a>
     <span class="gate-note">Belum punya akun? Hubungi admin sekolah</span>
   </div>
 </div>
@@ -362,15 +390,15 @@
     <div class="reveal reveal-delay-2">
       <div class="footer-col-title">Kontak</div>
       <div class="footer-links">
-        <a href="mailto:admin@smanx.sch.id">admin@smanx.sch.id</a>
+        <a href="mailto:smapsigallery@gmail.com">smapsigallery@gmail.com</a>
         <a href="tel:02100000000">(021) 000-0000</a>
-        <a href="#">Jakarta, Indonesia</a>
+        <a href="#">Cianjur, Indonesia</a>
       </div>
     </div>
   </div>
 
   <div class="footer-bottom">
-    <span class="footer-copy">© 2024 SMA Plus Sirojussyafi'iyyah. All rights reserved.</span>
+    <span class="footer-copy">© 2026 SMA Plus Sirojussyafi'iyyah. All rights reserved.</span>
     <span class="footer-copy">Kebijakan Privasi · Syarat Layanan</span>
   </div>
 
@@ -378,7 +406,6 @@
     <span class="sup-label">Powered by</span>
     <div class="sup-divider"></div>
     <a href="#" class="sup-logo">
-      <img src="assets/logo niits.png" alt="Niits" class="sup-logo-img">
       <div class="sup-logo-name">Niits <span>Inovasi Teknologi</span></div>
     </a>
   </div>
@@ -400,34 +427,6 @@ window.addEventListener('load', () => {
 });
 document.body.style.overflow = 'hidden';
 
-/* ═══════════════════════════════════════════════
-   CUSTOM CURSOR
-═══════════════════════════════════════════════ */
-const cursor = document.getElementById('cursor');
-const cursorRing = document.getElementById('cursorRing');
-let mouseX = 0, mouseY = 0;
-let ringX = 0, ringY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursor.style.left = mouseX + 'px';
-  cursor.style.top  = mouseY + 'px';
-});
-
-function animateRing() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  cursorRing.style.left = ringX + 'px';
-  cursorRing.style.top  = ringY + 'px';
-  requestAnimationFrame(animateRing);
-}
-animateRing();
-
-document.querySelectorAll('a, button, .m-item, .hero-img, .feat-img-big, .feat-img-sm, .event-item').forEach(el => {
-  el.addEventListener('mouseenter', () => cursor.classList.add('expanded'));
-  el.addEventListener('mouseleave', () => cursor.classList.remove('expanded'));
-});
 
 /* ═══════════════════════════════════════════════
    SCROLL PROGRESS + NAV
@@ -490,15 +489,14 @@ function animateCount(el, target) {
 }
 
 const statNums = document.querySelectorAll('.stat-num[data-count]');
-const countObserver = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting && !entry.target.dataset.counted) {
-      entry.target.dataset.counted = true;
-      animateCount(entry.target, parseInt(entry.target.dataset.count));
-    }
+// Animasikan hitungan angka langsung saat halaman dimuat
+document.addEventListener('DOMContentLoaded', () => {
+  statNums.forEach((el, i) => {
+    setTimeout(() => {
+      animateCount(el, parseInt(el.dataset.count));
+    }, 300 + i * 150);
   });
-}, { threshold: 0.5 });
-statNums.forEach(el => countObserver.observe(el));
+});
 
 /* ═══════════════════════════════════════════════
    HAMBURGER + DRAWER
@@ -554,10 +552,17 @@ const lightbox = document.getElementById('lightbox');
 const lightboxClose = document.getElementById('lightboxClose');
 const lightboxCat = document.getElementById('lightboxCat');
 const lightboxTitle = document.getElementById('lightboxTitle');
+const lightboxImg = document.getElementById('lightboxImg');
 
-function openLightbox(cat, title) {
+function openLightbox(cat, title, imgSrc) {
   lightboxCat.textContent = cat;
   lightboxTitle.textContent = title;
+  if (imgSrc) {
+    lightboxImg.src = imgSrc;
+    lightboxImg.style.display = 'block';
+  } else {
+    lightboxImg.style.display = 'none';
+  }
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -566,16 +571,110 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 
-document.querySelectorAll('.m-item, .hero-img, .feat-img-big').forEach(el => {
+document.querySelectorAll('.m-item, .hero-img, .feat-img-big, .feat-img-sm, .event-item').forEach(el => {
   el.addEventListener('click', () => {
     const cat = el.dataset.cat || el.dataset.catLabel || 'Kegiatan';
     const title = el.dataset.title || 'Foto Kegiatan';
-    openLightbox(cat, title);
+
+    let imgSrc = el.dataset.img;
+    if (!imgSrc && el.style.backgroundImage) {
+      const match = el.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/);
+      if (match) imgSrc = match[1];
+    }
+    if (!imgSrc) {
+      const computedStyle = window.getComputedStyle(el).backgroundImage;
+      if (computedStyle && computedStyle !== 'none') {
+        const match = computedStyle.match(/url\(['"]?(.*?)['"]?\)/);
+        if (match) imgSrc = match[1];
+      }
+    }
+
+    openLightbox(cat, title, imgSrc);
   });
 });
 lightboxClose.addEventListener('click', closeLightbox);
 lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+  function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>`;
+    } else {
+      input.type = 'password';
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>`;
+    }
+  }
+
+  function handleModalLogin(e) {
+    if (e) e.preventDefault();
+    const userVal = document.getElementById('modalUsername').value.trim();
+    const passVal = document.getElementById('modalPassword').value.trim();
+    const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+
+    if (!userVal || !passVal) return;
+
+    if (userVal.toLowerCase() === 'admin') {
+      if (passVal === 'admin123') {
+        localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'admin', expiry: Date.now() + TWO_HOURS_MS }));
+        showToast('Login berhasil! Mengarahkan ke Dashboard...', 'success');
+        setTimeout(() => { window.location.href = 'admin/index.html'; }, 800);
+      } else {
+        showLuxuryModal({
+          title: 'Kata Sandi Salah',
+          message: 'Password Administrator salah. Gunakan password default: <strong>admin123</strong>',
+          type: 'error'
+        });
+      }
+    } else if (userVal.toLowerCase() === 'user') {
+      if (passVal === 'user123') {
+        localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'user', expiry: Date.now() + TWO_HOURS_MS }));
+        showToast('Login berhasil! Mengarahkan ke Galeri...', 'success');
+        setTimeout(() => { window.location.href = 'gallery.html'; }, 800);
+      } else {
+        showLuxuryModal({
+          title: 'Kata Sandi Salah',
+          message: 'Password akun User salah. Gunakan password default: <strong>user123</strong>',
+          type: 'error'
+        });
+      }
+    } else {
+      localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'user', expiry: Date.now() + TWO_HOURS_MS }));
+      showToast('Login berhasil! Mengarahkan ke Galeri...', 'success');
+      setTimeout(() => { window.location.href = 'gallery.html'; }, 800);
+    }
+  }
+
+  function handleSeeAllClick(e) {
+    if (e) e.preventDefault();
+    const sessionStr = localStorage.getItem('user_session');
+    if (sessionStr) {
+      try {
+        const session = JSON.parse(sessionStr);
+        if (Date.now() < session.expiry) {
+          window.location.href = 'gallery.html';
+          return;
+        }
+      } catch (err) { }
+    }
+    window.location.href = 'login.html';
+  }
+
+/* ═══════════════════════════════════════════════
+   SESSION CHECK & NAV UPDATE
+═══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof updateNavbarProfileUI === 'function') {
+    updateNavbarProfileUI();
+  }
+});
 
 /* ═══════════════════════════════════════════════
    SMOOTH SCROLL
@@ -590,17 +689,27 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+
+
 /* ═══════════════════════════════════════════════
-   HERO IMAGE PARALLAX (desktop only)
+   REVEAL ON SCROLL OBSERVER & MASONRY IMAGES
 ═══════════════════════════════════════════════ */
-if (window.innerWidth > 768) {
-  window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    document.querySelectorAll('.hero-img').forEach((img, i) => {
-      img.style.transform = `translateY(${scrollY * (0.04 + i * 0.02)}px)`;
-    });
+document.querySelectorAll('.m-item').forEach(item => {
+  const imgSrc = item.getAttribute('data-img');
+  if (imgSrc) {
+    item.style.backgroundImage = `url('${imgSrc}')`;
+  }
+});
+
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
   });
-}
+}, { threshold: 0.05 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 /* ═══════════════════════════════════════════════
    MASONRY ITEM STAGGER ON LOAD
@@ -621,19 +730,10 @@ const masonryObserver = new IntersectionObserver(entries => {
       masonryObserver.unobserve(entry.target);
     }
   });
-}, { threshold: 0.1 });
+}, { threshold: 0.05 });
 
 const grid = document.querySelector('.masonry-grid');
 if (grid) masonryObserver.observe(grid);
-
-/* ═══════════════════════════════════════════════
-   EVENT ITEM HOVER SOUND EFFECT (subtle)
-═══════════════════════════════════════════════ */
-document.querySelectorAll('.event-item').forEach(item => {
-  item.addEventListener('mouseenter', () => {
-    item.style.transition = 'all 0.3s cubic-bezier(0.16,1,0.3,1)';
-  });
-});
 </script>
 </body>
 </html>
