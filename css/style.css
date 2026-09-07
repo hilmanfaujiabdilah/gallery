@@ -675,14 +675,14 @@ section {
 }
 .m-item.hidden { opacity: 0; transform: scale(0.97); pointer-events: none; }
 
-.m-item:nth-child(1)  { grid-column: span 5; grid-row: span 4; background-image: url('../assets/wisuda-all.JPG'); }
+.m-item:nth-child(1)  { grid-column: span 5; grid-row: span 4; background-image: url('../assets/haflah1.JPG'); }
 .m-item:nth-child(2)  { grid-column: span 4; grid-row: span 2; background-image: url('../assets/heroimages-osis.jpg'); }
 .m-item:nth-child(3)  { grid-column: span 3; grid-row: span 3; background-image: url('../assets/heroimages-perpus.jpg'); }
 .m-item:nth-child(4)  { grid-column: span 4; grid-row: span 3; background-image: url('../assets/heroimages-labipa.jpg'); }
 .m-item:nth-child(5)  { grid-column: span 5; grid-row: span 2; background-image: url('../assets/heroimages-tari.jpg'); }
-.m-item:nth-child(6)  { grid-column: span 3; grid-row: span 2; background-image: url('../assets/wisuda-juara.jpg'); }
+.m-item:nth-child(6)  { grid-column: span 3; grid-row: span 2; background-image: url('../assets/haflah3.JPG'); }
 .m-item:nth-child(7)  { grid-column: span 4; grid-row: span 3; background-image: url('../assets/heroimages-osis.jpg'); }
-.m-item:nth-child(8)  { grid-column: span 5; grid-row: span 3; background-image: url('../assets/wisuda-kelas12.jpg'); }
+.m-item:nth-child(8)  { grid-column: span 5; grid-row: span 3; background-image: url('../assets/haflah2.JPG'); }
 .m-item:nth-child(9)  { grid-column: span 3; grid-row: span 2; background-image: url('../assets/heroimages-labipa.jpg'); }
 
 .m-item-inner {

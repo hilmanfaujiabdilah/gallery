@@ -1373,11 +1373,11 @@
     savedList.forEach(album => {
       const card = document.createElement('div');
       card.className = 'saved-album-card';
-      const cover = album.cover_url || album.coverUrl || 'assets/wisuda-all.JPG';
+      const cover = album.cover_url || album.coverUrl || 'assets/haflah1.JPG';
       const title = album.album_title || album.title || 'Album';
       const cat = album.category || 'GALERI';
       const count = album.photo_count || album.photoCount || 0;
-      const slug = album.album_slug || album.slug || 'wisuda-2024';
+      const slug = album.album_slug || album.slug || 'haflah-2026';
 
       card.innerHTML = `
         <div class="saved-card-cover" style="background-image: url('${cover}');">

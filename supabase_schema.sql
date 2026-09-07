@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS public.albums (
 
 -- Insert Data Album Sampel
 INSERT INTO public.albums (title, photo_count, cover_urls, drive_url, description) VALUES
-('Wisuda Angkatan 2024', 248, '../assets/wisuda-all.JPG', 'https://drive.google.com', 'Dokumentasi resmi wisuda angkatan 2024 SMAPSI.'),
+('Haflah Akhirussanah 2026', 248, '../assets/haflah1.JPG', 'https://drive.google.com', 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI.'),
 ('Pelantikan OSIS 2024', 64, '../assets/heroimages-osis.jpg', 'https://drive.google.com', 'Upacara pengukuhan dan serah terima pengurus OSIS SMAPSI 2024.')
 ON CONFLICT DO NOTHING;
 

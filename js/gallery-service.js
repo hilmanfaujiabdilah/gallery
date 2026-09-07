@@ -98,12 +98,12 @@ const GalleryService = {
     return [
       {
         id: '1',
-        title: 'Wisuda Angkatan 2024',
+        title: 'Haflah Akhirussanah 2026',
         category_id: 'wisuda',
         photo_count: 248,
-        cover_urls: '../assets/wisuda-all.JPG',
+        cover_urls: '../assets/haflah1.JPG',
         drive_url: 'https://drive.google.com',
-        description: 'Dokumentasi resmi wisuda angkatan 2024 SMAPSI.'
+        description: 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI.'
       },
       {
         id: '2',

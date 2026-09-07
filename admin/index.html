@@ -261,13 +261,13 @@
             </thead>
             <tbody>
               <tr>
-                <td><img src="../assets/wisuda-all.JPG" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
-                <td><strong>Wisuda Angkatan 2024</strong></td>
+                <td><img src="../assets/haflah1.JPG" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
+                <td><strong>Haflah Akhirussanah 2026</strong></td>
                 <td><span class="badge badge-info">Wisuda</span></td>
                 <td><a href="https://drive.google.com" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px;">Buka Folder ↗</a></td>
                 <td>
-                  <button class="action-btn" onclick="openEditAlbumModal('Wisuda Angkatan 2024', 'wisuda', 248, 'https://drive.google.com/file/d/1A2B3C.../view?usp=sharing', 'https://drive.google.com', 'Dokumentasi resmi wisuda angkatan 2024 SMAPSI. Mengabadikan setiap momen berharga.')">Edit</button>
-                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Wisuda Angkatan 2024</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
+                  <button class="action-btn" onclick="openEditAlbumModal('Haflah Akhirussanah 2026', 'wisuda', 248, 'https://drive.google.com/file/d/1A2B3C.../view?usp=sharing', 'https://drive.google.com', 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI. Mengabadikan setiap momen berharga.')">Edit</button>
+                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Haflah Akhirussanah 2026</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
                 </td>
               </tr>
               <tr>
@@ -1378,15 +1378,15 @@
     'drive.wisuda.smapsi@gmail.com': {
       accountName: 'Wisuda',
       folders: [
-        { id: 'f1', name: 'Wisuda Angkatan 2024', itemsCount: 248, date: '14 Mei 2024' },
-        { id: 'f2', name: 'Gladi Bersih Wisuda', itemsCount: 64, date: '12 Mei 2024' },
-        { id: 'f3', name: 'Foto Studio Kelompok', itemsCount: 92, date: '15 Mei 2024' },
-        { id: 'f4', name: 'Pentas Seni Perpisahan', itemsCount: 110, date: '14 Mei 2024' }
+        { id: 'f1', name: 'Haflah Akhirussanah 2026', itemsCount: 248, date: '14 Mei 2026' },
+        { id: 'f2', name: 'Gladi Bersih Haflah', itemsCount: 64, date: '12 Mei 2026' },
+        { id: 'f3', name: 'Foto Studio Kelompok', itemsCount: 92, date: '15 Mei 2026' },
+        { id: 'f4', name: 'Pentas Seni Perpisahan', itemsCount: 110, date: '14 Mei 2026' }
       ],
       files: [
-        { id: 'img1', name: 'wisuda-prosesi-01.jpg', size: '2.4 MB', img: '../assets/wisuda-all.JPG' },
-        { id: 'img2', name: 'wisuda-juara-umum.jpg', size: '3.1 MB', img: '../assets/wisuda-juara.jpg' },
-        { id: 'img3', name: 'wisuda-kelas12-ipa.jpg', size: '2.8 MB', img: '../assets/wisuda-kelas12.jpg' }
+        { id: 'img1', name: 'haflah-prosesi-01.jpg', size: '2.4 MB', img: '../assets/haflah1.JPG' },
+        { id: 'img2', name: 'haflah-juara-umum.jpg', size: '3.1 MB', img: '../assets/haflah3.JPG' },
+        { id: 'img3', name: 'haflah-kelas12-ipa.jpg', size: '2.8 MB', img: '../assets/haflah2.JPG' }
       ]
     },
     'drive.osis.smapsi@gmail.com': {
@@ -1398,7 +1398,8 @@
       ],
       files: [
         { id: 'img4', name: 'osis-pelantikan-01.jpg', size: '1.8 MB', img: '../assets/heroimages-osis.jpg' },
-        { id: 'img5', name: 'osis-pensi-tari.jpg', size: '2.2 MB', img: '../assets/heroimages-tari.jpg' }
+        { id: 'img5', name: 'osis-rapat-kerja.jpg', size: '2.1 MB', img: '../assets/heroimages-perpus.jpg' },
+        { id: 'img6', name: 'osis-pensi-stage.jpg', size: '3.4 MB', img: '../assets/heroimages-tari.jpg' }
       ]
     },
     'drive.olahraga.smapsi@gmail.com': {
@@ -1427,7 +1428,7 @@
         { id: 'f_default', name: 'Folder Utama', itemsCount: 12, date: 'Hari ini' }
       ],
       files: [
-        { id: 'img_def', name: 'foto-sampel.jpg', size: '1.5 MB', img: '../assets/wisuda-all.JPG' }
+        { id: 'img_def', name: 'foto-sampel.jpg', size: '1.5 MB', img: '../assets/haflah1.JPG' }
       ]
     };
 
@@ -1523,7 +1524,7 @@
           { id: 'f_new1', name: `Folder ${labelName}`, itemsCount: 1, date: 'Hari ini' }
         ],
         files: [
-          { id: 'img_new1', name: 'sampel-dokumentasi.jpg', size: '1.9 MB', img: '../assets/wisuda-all.JPG' }
+          { id: 'img_new1', name: 'sampel-dokumentasi.jpg', size: '1.9 MB', img: '../assets/haflah1.JPG' }
         ]
       };
     }
@@ -1617,7 +1618,7 @@
       id: 'img_' + Date.now(),
       name: fileName,
       size: '2.5 MB',
-      img: '../assets/wisuda-all.JPG'
+      img: '../assets/haflah1.JPG'
     });
 
     closeUploadPhotoModal();
