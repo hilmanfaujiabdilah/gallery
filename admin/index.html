@@ -1012,6 +1012,48 @@
   </div>
 </div>
 
+<!-- EDIT USER POPUP MODAL -->
+<div class="luxury-overlay" id="editUserOverlay">
+  <div class="luxury-modal" style="max-width: 480px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        👤 Edit Akun User & Role
+      </h3>
+      <button onclick="closeEditUserModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form onsubmit="handleSaveEditUser(event)">
+      <input type="hidden" id="editTargetUserId">
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Username</label>
+        <input type="text" id="editUserUsername" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Nama Lengkap / Tampilan</label>
+        <input type="text" id="editUserDisplayName" placeholder="Nama lengkap siswa/guru/staf..." style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+      <div style="margin-bottom: 14px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Role / Jabatan</label>
+        <select id="editUserRoleSelect" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+          <option value="siswa">Siswa</option>
+          <option value="guru">Guru / Staf</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 18px;">
+        <label style="font-family: var(--mono); font-size: 9px; text-transform: uppercase; color: var(--muted1); letter-spacing: 0.1em; display: block; margin-bottom: 6px;">Status Akun</label>
+        <select id="editUserStatusSelect" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+          <option value="true">Aktif</option>
+          <option value="false">Nonaktif</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 12px; border-top: 0.5px solid var(--border);">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeEditUserModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- RESET PASSWORD POPUP MODAL -->
 <div class="luxury-overlay" id="resetPasswordOverlay">
   <div class="luxury-modal" style="max-width: 440px; text-align: left; padding: 24px 28px;">
@@ -1719,12 +1761,13 @@
 
         tr.innerHTML = `
           <td><code>#${user.id ? user.id.substring(0, 6) : '000000'}</code></td>
-          <td><strong>${user.username}</strong></td>
+          <td><strong>${user.username}</strong>${user.display_name ? `<div style="font-size: 10px; color: var(--muted2); font-weight: normal;">${user.display_name}</div>` : ''}</td>
           <td>${roleBadge}</td>
           <td>${statusBadge}</td>
           <td>
+            <button class="action-btn" onclick="openEditUserModal('${user.id}', '${encodeURIComponent(user.username || '')}', '${encodeURIComponent(user.role || 'siswa')}', '${encodeURIComponent(user.display_name || '')}', ${user.is_active !== false})">Edit</button>
             <button class="action-btn" onclick="openResetPasswordModal('${user.id}', '${user.username}')">Reset Sandi</button>
-            <button class="action-btn ${toggleActionClass}" onclick="handleToggleUserStatus('${user.id}', ${user.is_active}, '${user.username}')">${toggleActionText}</button>
+            <button class="action-btn delete" onclick="handleDeleteUser('${user.id}', '${user.username}')">Hapus</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1778,7 +1821,7 @@
       document.getElementById('newUsernameInput').value = '';
       document.getElementById('adminNewPw').value = '';
       await renderUserListUI();
-      showToast(`Akun user "${username}" berhasil ditambahkan ke database!`, 'success');
+      showToast(`Akun user "${username}" (${role.toUpperCase()}) berhasil ditambahkan ke database!`, 'success');
     } else {
       showLuxuryModal({
         title: 'Gagal Menambah User',
@@ -1786,6 +1829,87 @@
         type: 'error'
       });
     }
+  }
+
+  // Edit User Functions
+  function openEditUserModal(id, encUsername, encRole, encDisplayName, isActive) {
+    const username = decodeURIComponent(encUsername || '');
+    const role = decodeURIComponent(encRole || 'siswa');
+    const displayName = decodeURIComponent(encDisplayName || '');
+
+    document.getElementById('editTargetUserId').value = id;
+    document.getElementById('editUserUsername').value = username;
+    document.getElementById('editUserDisplayName').value = displayName;
+    document.getElementById('editUserRoleSelect').value = role.toLowerCase();
+    document.getElementById('editUserStatusSelect').value = isActive ? 'true' : 'false';
+
+    const overlay = document.getElementById('editUserOverlay');
+    if (overlay) overlay.classList.add('active');
+  }
+
+  function closeEditUserModal() {
+    const overlay = document.getElementById('editUserOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  async function handleSaveEditUser(e) {
+    e.preventDefault();
+    const id = document.getElementById('editTargetUserId').value;
+    const username = document.getElementById('editUserUsername').value.trim();
+    const displayName = document.getElementById('editUserDisplayName').value.trim();
+    const role = document.getElementById('editUserRoleSelect').value;
+    const isActive = document.getElementById('editUserStatusSelect').value === 'true';
+
+    if (!id || !username) return;
+
+    let res = { success: true };
+    if (window.UserService && UserService.updateUser) {
+      res = await UserService.updateUser(id, {
+        username: username,
+        role: role,
+        display_name: displayName,
+        is_active: isActive
+      });
+    }
+
+    if (res.success) {
+      closeEditUserModal();
+      await renderUserListUI();
+      showToast(`Data akun user "${username}" (Role: ${role.toUpperCase()}) berhasil diperbarui!`, 'success');
+    } else {
+      showLuxuryModal({
+        title: 'Gagal Memperbarui Akun',
+        message: `Terjadi kendala saat update di Supabase: <strong>${res.message || 'Error'}</strong>`,
+        type: 'error'
+      });
+    }
+  }
+
+  // Delete User Function
+  async function handleDeleteUser(id, username) {
+    showLuxuryModal({
+      title: 'Hapus Akun Pengguna',
+      message: `Apakah Anda yakin ingin menghapus akun pengguna <strong>${username}</strong> secara permanen dari database? Akun ini tidak akan dapat login kembali.`,
+      type: 'danger',
+      confirmText: 'Ya, Hapus Permanen',
+      cancelText: 'Batal',
+      onConfirm: async () => {
+        let res = { success: true };
+        if (window.UserService && UserService.deleteUser) {
+          res = await UserService.deleteUser(id);
+        }
+        if (res.success) {
+          await renderUserListUI();
+          showToast(`Akun user "${username}" berhasil dihapus dari sistem!`, 'success');
+        } else {
+          showLuxuryModal({
+            title: 'Gagal Menghapus Akun',
+            message: `Terjadi kendala: ${res.message || 'Tidak dapat menghapus data dari Supabase.'}`,
+            type: 'error'
+          });
+        }
+      }
+    });
   }
 
   async function handleToggleUserStatus(id, currentStatus, username) {

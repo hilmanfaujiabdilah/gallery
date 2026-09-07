@@ -67,6 +67,54 @@ const UserService = {
     return { success: true, is_active: newStatus };
   },
 
+  // Update akun user (username, role, display_name, status)
+  async updateUser(id, updates = {}) {
+    if (!id) return { success: false, message: 'ID User tidak valid' };
+    if (window.supabaseClient) {
+      try {
+        const payload = {};
+        if (updates.username !== undefined) payload.username = updates.username;
+        if (updates.role !== undefined) payload.role = updates.role;
+        if (updates.display_name !== undefined) payload.display_name = updates.display_name;
+        if (updates.displayName !== undefined) payload.display_name = updates.displayName;
+        if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+
+        const { data, error } = await window.supabaseClient
+          .from('user_profiles')
+          .update(payload)
+          .eq('id', id)
+          .select();
+
+        if (error) throw error;
+        return { success: true, data };
+      } catch (err) {
+        console.error('Gagal update user di Supabase:', err);
+        return { success: false, message: err.message };
+      }
+    }
+    return { success: true };
+  },
+
+  // Hapus akun user secara permanen
+  async deleteUser(id) {
+    if (!id) return { success: false, message: 'ID User tidak valid' };
+    if (window.supabaseClient) {
+      try {
+        const { error } = await window.supabaseClient
+          .from('user_profiles')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
+        return { success: true };
+      } catch (err) {
+        console.error('Gagal hapus user di Supabase:', err);
+        return { success: false, message: err.message };
+      }
+    }
+    return { success: true };
+  },
+
   // Update profil user (nama lengkap, avatar, dll) ke database Supabase
   async updateUserProfile(username, updates = {}) {
     if (!username) return { success: false };
