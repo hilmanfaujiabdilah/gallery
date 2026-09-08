@@ -23,7 +23,16 @@ const AuthService = {
         if (!error && profiles && profiles.length > 0) {
           const profile = profiles[0];
 
-          // 2. Cek apakah status akun aktif
+          // 2. Cek apakah password cocok secara ketat sesuai yang didaftarkan
+          if (!profile.password || profile.password !== password) {
+            await this.logActivity(profile.username, 'Gagal (Sandi Salah)', profile.role);
+            return {
+              success: false,
+              message: 'Kata sandi yang Anda masukkan salah.'
+            };
+          }
+
+          // 3. Cek apakah status akun aktif
           if (profile.is_active === false) {
             await this.logActivity(profile.username, 'Gagal (Nonaktif)', profile.role);
             return {
@@ -32,7 +41,7 @@ const AuthService = {
             };
           }
 
-          // 3. Set Session Data & Role berdasarkan data asli di Supabase
+          // 4. Set Session Data & Role berdasarkan data asli di Supabase
           const role = (profile.role || 'siswa').toLowerCase();
           const sessionData = {
             user: profile.username,

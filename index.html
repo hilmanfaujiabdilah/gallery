@@ -9,6 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth-service.js"></script>
+<script src="js/user-service.js"></script>
+<script src="js/category-service.js"></script>
+<script src="js/gallery-service.js"></script>
 <script src="js/popup.js"></script>
 <script src="js/profile-modal.js"></script>
 </head>
@@ -27,7 +33,7 @@
 <div class="scroll-progress" id="scrollProgress"></div>
 
 
-<!-- LIGHTBOX -->
+<!-- LIGHTBOX PREVIEW -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="lightboxClose">
     <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="0.8">
@@ -37,11 +43,13 @@
   </button>
   <div class="lightbox-content">
     <img id="lightboxImg" src="" alt="Preview Foto" class="lightbox-img">
-  </div>
-  <div class="lightbox-info">
-    <div>
-      <div class="lightbox-cat" id="lightboxCat">Kegiatan</div>
-      <div class="lightbox-title" id="lightboxTitle">Nama Kegiatan</div>
+    <div class="lightbox-caption">
+      <div class="lightbox-meta">
+        <div class="lightbox-cat" id="lightboxCat">Kegiatan</div>
+        <div class="lightbox-title" id="lightboxTitle">Nama Kegiatan</div>
+        <div class="lightbox-count" id="lightboxCount">64 foto dalam album</div>
+      </div>
+      <div class="lightbox-login-hint">Login untuk melihat semua foto</div>
     </div>
   </div>
 </div>
@@ -209,47 +217,47 @@
   </div>
 
   <div class="masonry-grid reveal">
-    <div class="m-item" data-category="wisuda" data-title="Haflah Akhirussanah 2026" data-cat-label="Wisuda" data-img="assets/haflah1.JPG">
+    <div class="m-item" data-slug="haflah-2026" data-category="wisuda" data-title="Haflah Akhirussanah 2026" data-cat-label="Wisuda" data-img="assets/haflah1.JPG">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Haflah Akhirussanah 2026 · 248 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="osis" data-title="Pelantikan OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
+    <div class="m-item" data-slug="pelantikan-osis" data-category="osis" data-title="Pelantikan OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pelantikan · 64 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="tour" data-title="Study Tour Yogyakarta" data-cat-label="Study Tour" data-img="assets/heroimages-perpus.jpg">
+    <div class="m-item" data-slug="study-tour-jogja" data-category="tour" data-title="Study Tour Yogyakarta" data-cat-label="Study Tour" data-img="assets/heroimages-perpus.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Study Tour</span><div class="m-item-label">Yogyakarta · 201 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="olahraga" data-title="Turnamen Futsal 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
+    <div class="m-item" data-slug="futsal-2024" data-category="olahraga" data-title="Turnamen Futsal 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Futsal · 92 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="seni" data-title="Pagelaran Seni Akhir Tahun" data-cat-label="Seni Budaya" data-img="assets/heroimages-tari.jpg">
+    <div class="m-item" data-slug="pagelaran-seni" data-category="seni" data-title="Pagelaran Seni Akhir Tahun" data-cat-label="Seni Budaya" data-img="assets/heroimages-tari.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Seni</span><div class="m-item-label">Pagelaran · 134 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="lomba" data-title="Olimpiade Sains Nasional" data-cat-label="Lomba" data-img="assets/haflah3.JPG">
+    <div class="m-item" data-slug="osn-2024" data-category="lomba" data-title="Olimpiade Sains Nasional" data-cat-label="Lomba" data-img="assets/haflah3.JPG">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Lomba</span><div class="m-item-label">OSN · 86 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="osis" data-title="Pensi OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
+    <div class="m-item" data-slug="pensi-osis" data-category="osis" data-title="Pensi OSIS 2024" data-cat-label="OSIS" data-img="assets/heroimages-osis.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">OSIS</span><div class="m-item-label">Pensi · 178 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="wisuda" data-title="Perpisahan Kelas XII" data-cat-label="Wisuda" data-img="assets/haflah2.JPG">
+    <div class="m-item" data-slug="perpisahan-kelas12" data-category="wisuda" data-title="Perpisahan Kelas XII" data-cat-label="Wisuda" data-img="assets/haflah2.JPG">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Wisuda</span><div class="m-item-label">Perpisahan · 96 foto</div></div>
       </div>
     </div>
-    <div class="m-item" data-category="olahraga" data-title="Class Meeting 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
+    <div class="m-item" data-slug="class-meeting" data-category="olahraga" data-title="Class Meeting 2024" data-cat-label="Olahraga" data-img="assets/heroimages-labipa.jpg">
       <div class="m-item-inner">
         <div><span class="m-item-cat">Olahraga</span><div class="m-item-label">Class Meeting · 113 foto</div></div>
       </div>
@@ -525,75 +533,202 @@ drawerOverlay.addEventListener('click', closeDrawer);
 drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
 
 /* ═══════════════════════════════════════════════
-   GALLERY FILTER
-═══════════════════════════════════════════════ */
-const filterBtns = document.querySelectorAll('.filter-btn');
-const mItems = document.querySelectorAll('.m-item');
-
-filterBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    filterBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const filter = btn.dataset.filter;
-    mItems.forEach((item, i) => {
-      const match = filter === 'all' || item.dataset.category === filter;
-      setTimeout(() => {
-        item.classList.toggle('hidden', !match);
-      }, i * 30);
-    });
-  });
-});
-
-/* ═══════════════════════════════════════════════
-   LIGHTBOX
+   LIGHTBOX PREVIEW & USER SESSION
 ═══════════════════════════════════════════════ */
 const lightbox = document.getElementById('lightbox');
 const lightboxClose = document.getElementById('lightboxClose');
 const lightboxCat = document.getElementById('lightboxCat');
 const lightboxTitle = document.getElementById('lightboxTitle');
+const lightboxCount = document.getElementById('lightboxCount');
 const lightboxImg = document.getElementById('lightboxImg');
 
-function openLightbox(cat, title, imgSrc) {
-  lightboxCat.textContent = cat;
-  lightboxTitle.textContent = title;
-  if (imgSrc) {
+function isUserLoggedIn() {
+  try {
+    const sessionStr = localStorage.getItem('user_session');
+    if (!sessionStr) return false;
+    const session = JSON.parse(sessionStr);
+    if (session && session.expiry && Date.now() < session.expiry) {
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+function openLightbox(cat, title, imgSrc, countText) {
+  if (lightboxCat) lightboxCat.textContent = cat || 'Kegiatan';
+  if (lightboxTitle) lightboxTitle.textContent = title || 'Foto Kegiatan';
+  if (lightboxCount) lightboxCount.textContent = countText ? `${countText}` : 'Koleksi Foto Resmi';
+
+  if (imgSrc && lightboxImg) {
     lightboxImg.src = imgSrc;
     lightboxImg.style.display = 'block';
-  } else {
+  } else if (lightboxImg) {
     lightboxImg.style.display = 'none';
   }
-  lightbox.classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox() {
-  lightbox.classList.remove('open');
-  document.body.style.overflow = '';
+  if (lightbox) {
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
 }
 
-document.querySelectorAll('.m-item, .hero-img, .feat-img-big, .feat-img-sm, .event-item').forEach(el => {
-  el.addEventListener('click', () => {
+function closeLightbox() {
+  if (lightbox) {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   DYNAMIC CATEGORY & ALBUM LOADER (SUPABASE POSTGRESQL)
+═══════════════════════════════════════════════ */
+async function loadDynamicCategoriesAndAlbums() {
+  const filterRow = document.querySelector('.filter-row');
+  const grid = document.querySelector('#gallery .masonry-grid');
+
+  let categories = [];
+  let albums = [];
+
+  // 1. Ambil daftar kategori resmi dari Supabase
+  if (window.CategoryService && typeof CategoryService.getCategories === 'function') {
+    try {
+      categories = await CategoryService.getCategories();
+    } catch (e) {
+      console.warn('Gagal memuat kategori dinamis:', e);
+    }
+  }
+
+  // 2. Ambil daftar album foto dari Supabase
+  if (window.GalleryService && typeof GalleryService.getAlbums === 'function') {
+    try {
+      albums = await GalleryService.getAlbums();
+    } catch (e) {
+      console.warn('Gagal memuat album dinamis:', e);
+    }
+  }
+
+  // Render Filter Kategori Dinamis
+  if (filterRow && categories && categories.length > 0) {
+    filterRow.innerHTML = `<button class="filter-btn active" data-filter="all">Semua</button>`;
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.dataset.filter = (cat.slug || cat.id || cat.name).toLowerCase();
+      btn.textContent = cat.name;
+      filterRow.appendChild(btn);
+    });
+  }
+
+  // Render Grid Album Foto Dinamis jika ada album di Supabase
+  if (grid && albums && albums.length > 0) {
+    grid.innerHTML = '';
+    albums.forEach(album => {
+      const catName = album.categories ? album.categories.name : (album.category || 'Wisuda');
+      const catSlug = (album.categories ? (album.categories.slug || album.categories.id) : (album.category_id || album.category || 'wisuda')).toLowerCase();
+      const year = album.year || (album.event_date ? new Date(album.event_date).getFullYear() : (album.title.match(/\b(20\d{2})\b/) ? album.title.match(/\b(20\d{2})\b/)[1] : 2026));
+      const count = album.photo_count || 0;
+      const cover = album.cover_urls || album.cover_url || 'assets/haflah1.JPG';
+      const albumId = album.id || album.slug;
+
+      const item = document.createElement('div');
+      item.className = 'm-item';
+      item.dataset.slug = albumId;
+      item.dataset.category = catSlug;
+      item.dataset.title = album.title;
+      item.dataset.catLabel = catName;
+      item.dataset.img = cover;
+      item.dataset.count = `${count} foto`;
+      item.style.backgroundImage = `url('${cover}')`;
+
+      item.innerHTML = `
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">${catName.toUpperCase()} · ${year}</span>
+            <div class="m-item-label">${album.title} · ${count} foto</div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(item);
+    });
+  }
+
+  // Bind event filter ke semua tombol
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = (btn.dataset.filter || 'all').toLowerCase();
+      const items = document.querySelectorAll('#gallery .m-item');
+      items.forEach((item, i) => {
+        const itemCat = (item.dataset.category || '').toLowerCase();
+        const match = filter === 'all' || itemCat === filter || itemCat.includes(filter);
+        setTimeout(() => {
+          item.classList.toggle('hidden', !match);
+        }, i * 20);
+      });
+    });
+  });
+
+  // Bind click event pada album item
+  bindGalleryItemClickEvents();
+}
+
+function bindGalleryItemClickEvents() {
+  document.querySelectorAll('#gallery .m-item').forEach(el => {
+    el.onclick = (e) => {
+      e.preventDefault();
+      const slug = el.dataset.slug || 'haflah-2026';
+
+      if (isUserLoggedIn()) {
+        window.location.href = 'detail.html?id=' + slug;
+        return;
+      }
+
+      const cat = el.dataset.catLabel || el.dataset.cat || 'Wisuda';
+      const title = el.dataset.title || 'Haflah Akhirussanah 2026';
+      const count = el.dataset.count || 'Foto Terorganisir';
+      const imgSrc = getElementImage(el);
+
+      openLightbox(cat, title, imgSrc, count);
+    };
+  });
+}
+
+document.addEventListener('DOMContentLoaded', loadDynamicCategoriesAndAlbums);
+
+// 2. Klik pada Foto Hero, Haflah Akhirussanah (Section 02), & Event Item:
+// Selalu membuka preview lightbox (tidak masuk ke detail album)
+document.querySelectorAll('.hero-img, .feat-img-big, .feat-img-sm, .event-item').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+
     const cat = el.dataset.cat || el.dataset.catLabel || 'Kegiatan';
     const title = el.dataset.title || 'Foto Kegiatan';
+    const count = el.dataset.count || (el.querySelector('.event-count') ? el.querySelector('.event-count').textContent : 'Foto Terpilih');
+    const imgSrc = getElementImage(el);
 
-    let imgSrc = el.dataset.img;
-    if (!imgSrc && el.style.backgroundImage) {
-      const match = el.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/);
-      if (match) imgSrc = match[1];
-    }
-    if (!imgSrc) {
-      const computedStyle = window.getComputedStyle(el).backgroundImage;
-      if (computedStyle && computedStyle !== 'none') {
-        const match = computedStyle.match(/url\(['"]?(.*?)['"]?\)/);
-        if (match) imgSrc = match[1];
-      }
-    }
-
-    openLightbox(cat, title, imgSrc);
+    openLightbox(cat, title, imgSrc, count);
   });
 });
-lightboxClose.addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+function getElementImage(el) {
+  let imgSrc = el.dataset.img;
+  if (!imgSrc && el.style.backgroundImage) {
+    const match = el.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/);
+    if (match) imgSrc = match[1];
+  }
+  if (!imgSrc) {
+    const computedStyle = window.getComputedStyle(el).backgroundImage;
+    if (computedStyle && computedStyle !== 'none') {
+      const match = computedStyle.match(/url\(['"]?(.*?)['"]?\)/);
+      if (match) imgSrc = match[1];
+    }
+  }
+  return imgSrc;
+}
+
+if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+if (lightbox) lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
   function togglePasswordVisibility(inputId, btn) {
     const input = document.getElementById(inputId);
@@ -613,42 +748,40 @@ lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightb
     }
   }
 
-  function handleModalLogin(e) {
+  async function handleModalLogin(e) {
     if (e) e.preventDefault();
     const userVal = document.getElementById('modalUsername').value.trim();
     const passVal = document.getElementById('modalPassword').value.trim();
-    const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
-    if (!userVal || !passVal) return;
+    if (!userVal || !passVal) {
+      if (window.showToast) showToast('Username dan password harus diisi.', 'error');
+      return;
+    }
 
-    if (userVal.toLowerCase() === 'admin') {
-      if (passVal === 'admin123') {
-        localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'admin', expiry: Date.now() + TWO_HOURS_MS }));
-        showToast('Login berhasil! Mengarahkan ke Dashboard...', 'success');
-        setTimeout(() => { window.location.href = 'admin/index.html'; }, 800);
+    if (window.AuthService) {
+      const res = await AuthService.login(userVal, passVal);
+      if (res.success) {
+        showToast('Login berhasil! Mengarahkan...', 'success');
+        setTimeout(() => {
+          if (res.role === 'admin') {
+            window.location.href = 'admin/index.html';
+          } else {
+            window.location.href = 'gallery.html';
+          }
+        }, 800);
       } else {
         showLuxuryModal({
-          title: 'Kata Sandi Salah',
-          message: 'Password Administrator salah. Gunakan password default: <strong>admin123</strong>',
-          type: 'error'
-        });
-      }
-    } else if (userVal.toLowerCase() === 'user') {
-      if (passVal === 'user123') {
-        localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'user', expiry: Date.now() + TWO_HOURS_MS }));
-        showToast('Login berhasil! Mengarahkan ke Galeri...', 'success');
-        setTimeout(() => { window.location.href = 'gallery.html'; }, 800);
-      } else {
-        showLuxuryModal({
-          title: 'Kata Sandi Salah',
-          message: 'Password akun User salah. Gunakan password default: <strong>user123</strong>',
+          title: 'Login Gagal',
+          message: res.message || 'Username atau kata sandi tidak cocok. Silakan periksa kembali!',
           type: 'error'
         });
       }
     } else {
-      localStorage.setItem('user_session', JSON.stringify({ user: userVal, role: 'user', expiry: Date.now() + TWO_HOURS_MS }));
-      showToast('Login berhasil! Mengarahkan ke Galeri...', 'success');
-      setTimeout(() => { window.location.href = 'gallery.html'; }, 800);
+      showLuxuryModal({
+        title: 'Login Gagal',
+        message: 'Layanan autentikasi belum siap. Silakan coba sesaat lagi.',
+        type: 'error'
+      });
     }
   }
 

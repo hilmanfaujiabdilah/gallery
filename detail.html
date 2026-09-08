@@ -13,9 +13,23 @@
 <script src="js/supabase-config.js"></script>
 <script src="js/auth-service.js"></script>
 <script src="js/user-service.js"></script>
+<script src="js/category-service.js"></script>
+<script src="js/gallery-service.js"></script>
+<script src="js/google-drive-service.js"></script>
 <script src="js/popup.js"></script>
 <script src="js/profile-modal.js"></script>
 <style>
+  @keyframes fadeInUpPhoto {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .album-photo-card {
     border-radius: 4px;
     background-color: var(--surface);
@@ -26,24 +40,42 @@
     overflow: hidden;
     cursor: pointer;
     border: 0.5px solid var(--border);
-    transition: transform 0.3s var(--ease-out), border-color 0.3s;
+    transition: transform 0.3s var(--ease-out), border-color 0.3s, filter 0.3s ease;
+    animation: fadeInUpPhoto 0.35s ease forwards;
   }
   .album-photo-card:hover {
     transform: translateY(-4px);
     border-color: var(--border2);
+    filter: brightness(1.08);
   }
-  .album-photo-card .photo-hover-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.4);
-    opacity: 0;
-    display: flex;
+
+  .btn-load-more {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.3s;
+    gap: 6px;
+    padding: 0 16px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    color: #f8fafc;
+    font-family: var(--sans, 'DM Sans', sans-serif);
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   }
-  .album-photo-card:hover .photo-hover-overlay {
-    opacity: 1;
+  .btn-load-more:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  }
+  .btn-load-more:active {
+    transform: translateY(0);
   }
 
   /* ACTION BUTTONS & SAVE ALBUM BUTTON (UNIFORM RATIOS & RESPONSIVE STACK) */
@@ -99,6 +131,16 @@
     color: #3b82f6;
   }
 
+  .related-albums-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .related-albums-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
   @media (max-width: 600px) {
     .action-buttons-wrap {
       flex-direction: column;
@@ -109,17 +151,40 @@
     .btn-save-album {
       width: 100%;
     }
+    .related-albums-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
 <body>
 
-<!-- LIGHTBOX MODAL -->
-<div class="lightbox" id="lightbox" style="position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(12px);">
-  <button onclick="closeLightbox()" style="position: absolute; top: 24px; right: 32px; background: none; border: none; color: var(--white); font-family: var(--mono); font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-    ✕ Tutup Pratinjau
+<!-- LIGHTBOX PREVIEW -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" onclick="closeLightbox()">
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="0.8">
+      <path d="M1 1l12 12M13 1L1 13"/>
+    </svg>
+    Tutup
   </button>
-  <img id="lightboxImg" src="" alt="Pratinjau Foto" style="max-width: 90vw; max-height: 85vh; border-radius: 4px; border: 0.5px solid var(--border2);">
+  <div class="lightbox-content">
+    <img id="lightboxImg" src="" alt="Preview Foto" class="lightbox-img">
+    <div class="lightbox-caption">
+      <div class="lightbox-meta">
+        <div class="lightbox-cat" id="lightboxCat">WISUDA</div>
+        <div class="lightbox-title" id="lightboxTitle">Haflah Akhirussanah 2026</div>
+        <div class="lightbox-count" id="lightboxCount">Foto 1 dari 120</div>
+      </div>
+      <a id="lightboxDownloadBtn" href="#" target="_blank" class="btn-drive-link" style="height: 32px; font-size: 11.5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Unduh Foto</span>
+      </a>
+    </div>
+  </div>
 </div>
 
 <!-- SCROLL PROGRESS -->
@@ -200,10 +265,11 @@
 <main style="padding: 60px 48px 80px; background: var(--black);">
   <div style="max-width: 1100px; margin: 0 auto;">
     
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border);">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; gap: 12px;">
       <h2 style="font-family: var(--serif); font-size: 24px; font-weight: 500; color: var(--white); margin: 0;">
         Daftar Foto dalam Album
       </h2>
+      <span id="photoCountBadge" style="font-family: var(--mono); font-size: 11px; color: var(--muted2); letter-spacing: 0.05em;"></span>
     </div>
 
     <!-- Photos Grid -->
@@ -211,11 +277,26 @@
       <!-- Injected via JavaScript based on album ID -->
     </div>
 
+    <!-- LOAD MORE CONTAINER -->
+    <div id="loadMoreContainer" style="margin-top: 48px; text-align: center; display: none;">
+      <div style="margin-bottom: 14px;">
+        <span id="loadMoreCounter" style="font-family: var(--mono); font-size: 12px; color: var(--muted2); letter-spacing: 0.05em;">
+          Menampilkan 30 dari 120 Foto
+        </span>
+      </div>
+      <button id="loadMoreBtn" onclick="loadMorePhotos()" class="btn-load-more">
+        <span>Lihat Selengkapnya</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+
   </div>
 </main>
 
 <!-- RELATED ALBUMS SECTION (ALBUM TERKAIT) -->
-<section style="padding: 80px 48px; background: var(--deep); border-top: 0.5px solid var(--border);">
+<section id="relatedAlbumsSection" style="padding: 80px 48px; background: var(--deep); border-top: 0.5px solid var(--border);">
   <div style="max-width: 1100px; margin: 0 auto;">
     
     <div class="sect-head" style="margin-bottom: 32px;">
@@ -224,7 +305,7 @@
       <div class="sect-line"></div>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;" id="relatedAlbumsGrid">
+    <div class="related-albums-grid" id="relatedAlbumsGrid">
       <!-- Injected via JavaScript -->
     </div>
 
@@ -248,149 +329,76 @@
 </footer>
 
 <script>
-  const albumDatabase = {
-    'haflah-2026': {
-      title: 'Haflah Akhirussanah 2026',
-      category: 'WISUDA',
-      meta: '248 FOTO · 2026',
-      description: 'Dokumentasi resmi prosesi wisuda dan haflah akhirussanah purna siswa angkatan 2026 SMAPSI. Mengabadikan setiap momen berharga mulai dari prosesi penyerahan ijazah, pengukuhan kelulusan, pelepasan atribut sekolah, hingga pentas seni perpisahan bersama jajaran guru dan orang tua murid.',
-      photos: [
-        'assets/haflah1.JPG',
-        'assets/haflah3.JPG',
-        'assets/haflah2.JPG',
-        'assets/heroimages-osis.jpg',
-        'assets/heroimages-tari.jpg',
-        'assets/heroimages-perpus.jpg'
-      ],
-      related: ['perpisahan-kelas12', 'pelantikan-osis', 'pagelaran-seni']
-    },
-    'wisuda-2024': {
-      title: 'Haflah Akhirussanah 2026',
-      category: 'WISUDA',
-      meta: '248 FOTO · 2026',
-      description: 'Dokumentasi resmi prosesi wisuda dan haflah akhirussanah purna siswa angkatan 2026 SMAPSI. Mengabadikan setiap momen berharga mulai dari prosesi penyerahan ijazah, pengukuhan kelulusan, pelepasan atribut sekolah, hingga pentas seni perpisahan bersama jajaran guru dan orang tua murid.',
-      photos: [
-        'assets/haflah1.JPG',
-        'assets/haflah3.JPG',
-        'assets/haflah2.JPG',
-        'assets/heroimages-osis.jpg',
-        'assets/heroimages-tari.jpg',
-        'assets/heroimages-perpus.jpg'
-      ],
-      related: ['perpisahan-kelas12', 'pelantikan-osis', 'pagelaran-seni']
-    },
-    'pelantikan-osis': {
-      title: 'Pelantikan OSIS 2024',
-      category: 'OSIS',
-      meta: '64 FOTO · 20 FEBRUARI 2024',
-      description: 'Upacara pengukuhan dan serah terima jabatan pengurus OSIS SMAPSI periode 2024/2025. Prosesi pembacaan janji pengurus, penyerahan bendera pataka organisasi, serta sambutan dari Kepala Sekolah.',
-      photos: [
-        'assets/heroimages-osis.jpg',
-        'assets/heroimages-perpus.jpg',
-        'assets/heroimages-labipa.jpg',
-        'assets/haflah1.JPG'
-      ],
-      related: ['pensi-osis', 'haflah-2026', 'class-meeting']
-    },
-    'study-tour-jogja': {
-      title: 'Study Tour Yogyakarta',
-      category: 'STUDY TOUR',
-      meta: '201 FOTO · 10 MARET 2024',
-      description: 'Kunjungan edukasi dan apresiasi budaya siswa kelas XI ke destinasi bersejarah di Yogyakarta, termasuk Candi Prambanan, Kraton Yogyakarta, Museum Gunung Merapi, dan Malioboro.',
-      photos: [
-        'assets/heroimages-perpus.jpg',
-        'assets/heroimages-tari.jpg',
-        'assets/haflah2.JPG',
-        'assets/heroimages-osis.jpg'
-      ],
-      related: ['pagelaran-seni', 'futsal-2024', 'osn-2024']
-    },
-    'futsal-2024': {
-      title: 'Turnamen Futsal Cup',
-      category: 'OLAHRAGA',
-      meta: '92 FOTO · 05 APRIL 2024',
-      description: 'Kompetisi futsal antar-kelas SMAPSI yang berlangsung sengit dan penuh sportivitas. Mengabadikan aksi-aksi terbaik para pemain, selebrasi juara, serta antusiasme supporter antar angkatan.',
-      photos: [
-        'assets/heroimages-labipa.jpg',
-        'assets/haflah3.JPG',
-        'assets/heroimages-osis.jpg',
-        'assets/haflah1.JPG'
-      ],
-      related: ['class-meeting', 'pelantikan-osis', 'study-tour-jogja']
-    },
-    'pagelaran-seni': {
-      title: 'Pagelaran Seni Akhir Tahun',
-      category: 'SENI BUDAYA',
-      meta: '134 FOTO · 22 DESEMBER 2023',
-      description: 'Ajang ekspresi bakat seni dan budaya siswa SMAPSI meliputi tari tradisional, drama teater, konser musik akustik, serta pameran seni rupa karya cipta siswa.',
-      photos: [
-        'assets/heroimages-tari.jpg',
-        'assets/heroimages-perpus.jpg',
-        'assets/haflah2.JPG',
-        'assets/haflah1.JPG'
-      ],
-      related: ['study-tour-jogja', 'pensi-osis', 'haflah-2026']
-    },
-    'osn-2024': {
-      title: 'Olimpiade Sains Nasional',
-      category: 'LOMBA',
-      meta: '86 FOTO · 18 JANUARI 2024',
-      description: 'Dokumentasi perjuangan tim olimpiade sains sekolah pada seleksi OSN tingkat kabupaten/kota. Penyerahan penghargaan bagi para siswa peraih medali emas dan perak.',
-      photos: [
-        'assets/haflah3.JPG',
-        'assets/heroimages-labipa.jpg',
-        'assets/haflah1.JPG',
-        'assets/heroimages-osis.jpg'
-      ],
-      related: ['haflah-2026', 'pelantikan-osis', 'futsal-2024']
-    },
-    'pensi-osis': {
-      title: 'Pentas Seni (Pensi) OSIS',
-      category: 'OSIS',
-      meta: '178 FOTO · 11 NOVEMBER 2023',
-      description: 'Acara puncak pesta kreasi siswa yang diselenggarakan oleh OSIS. Dimeriahkan oleh pertunjukan band lokal sekolah, peragaan busana adat, dan bazar kuliner siswa.',
-      photos: [
-        'assets/heroimages-osis.jpg',
-        'assets/heroimages-tari.jpg',
-        'assets/haflah2.JPG'
-      ],
-      related: ['pelantikan-osis', 'pagelaran-seni', 'haflah-2026']
-    },
-    'perpisahan-kelas12': {
-      title: 'Perpisahan Kelas XII',
-      category: 'WISUDA',
-      meta: '96 FOTO · 12 MEI 2024',
-      description: 'Malam keakraban dan perpisahan siswa kelas XII bersama bapak/ibu guru wali kelas. Momen haru pelepasan balon ke udara dan penampilan musik kenangan.',
-      photos: [
-        'assets/haflah2.JPG',
-        'assets/haflah1.JPG',
-        'assets/heroimages-perpus.jpg'
-      ],
-      related: ['haflah-2026', 'pensi-osis', 'pagelaran-seni']
-    },
-    'class-meeting': {
-      title: 'Class Meeting Semester 1',
-      category: 'OLAHRAGA',
-      meta: '113 FOTO · 18 DESEMBER 2023',
-      description: 'Pekan olahraga dan keakraban pasca ujian semester. Perlombaan mencakup bola voli, catur, e-sports, dan estafet tradisional.',
-      photos: [
-        'assets/heroimages-labipa.jpg',
-        'assets/haflah3.JPG',
-        'assets/heroimages-osis.jpg'
-      ],
-      related: ['futsal-2024', 'pelantikan-osis', 'osn-2024']
-    }
-  };
-
   // Extract ID from URL query string
   function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
   }
 
-  function loadAlbumData() {
-    const albumId = getQueryParam('id') || 'wisuda-2024';
-    const data = albumDatabase[albumId] || albumDatabase['wisuda-2024'];
+  async function loadAlbumData() {
+    const sessionStr = localStorage.getItem('user_session');
+    let session = null;
+    if (sessionStr) {
+      try {
+        session = JSON.parse(sessionStr);
+        if (session.expiry && Date.now() > session.expiry) session = null;
+      } catch (e) {
+        session = null;
+      }
+    }
+
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    let remoteAlbums = [];
+
+    // Ambil daftar album langsung dari Supabase
+    if (window.GalleryService && typeof GalleryService.getAlbums === 'function') {
+      try {
+        remoteAlbums = await GalleryService.getAlbums();
+      } catch (e) {
+        console.warn('Gagal memuat album dari database:', e);
+      }
+    }
+
+    const albumId = getQueryParam('id');
+    let foundAlbum = null;
+
+    if (remoteAlbums && remoteAlbums.length > 0) {
+      if (albumId) {
+        foundAlbum = remoteAlbums.find(a => (a.slug || a.id) === albumId || String(a.id) === albumId || String(a.slug) === albumId);
+      }
+      if (!foundAlbum) {
+        foundAlbum = remoteAlbums[0];
+      }
+    }
+
+    let data = null;
+    if (foundAlbum) {
+      data = {
+        id: foundAlbum.id,
+        slug: foundAlbum.slug,
+        title: foundAlbum.title,
+        category: foundAlbum.categories?.name || foundAlbum.category || 'Kegiatan',
+        meta: `${foundAlbum.photo_count || 0} FOTO · ${foundAlbum.year || (foundAlbum.event_date ? new Date(foundAlbum.event_date).getFullYear() : new Date(foundAlbum.created_at || Date.now()).getFullYear())}`,
+        description: foundAlbum.description || 'Dokumentasi resmi kegiatan sekolah SMAPSI.',
+        photos: Array.isArray(foundAlbum.photos) ? foundAlbum.photos : (foundAlbum.cover_urls || foundAlbum.cover_url ? [foundAlbum.cover_urls || foundAlbum.cover_url] : []),
+        driveUrl: foundAlbum.drive_url
+      };
+    } else {
+      data = {
+        id: 'album-default',
+        slug: albumId || 'album',
+        title: 'Dokumentasi Galeri SMAPSI',
+        category: 'Kegiatan',
+        meta: '0 FOTO · 2026',
+        description: 'Dokumentasi kegiatan resmi sekolah SMAPSI.',
+        photos: [],
+        driveUrl: ''
+      };
+    }
 
     document.getElementById('docTitle').textContent = data.title + ' — SMAPSI Gallery';
     document.getElementById('albumTitle').textContent = data.title;
@@ -400,47 +408,66 @@
     const driveLinkEl = document.getElementById('albumDriveLink');
     if (driveLinkEl) driveLinkEl.href = data.driveUrl || 'https://drive.google.com';
 
-    // Load Photos
+    // Ambil foto langsung dari Google Drive Folder
+    let photoList = data.photos || [];
+    if (data.driveUrl && window.GoogleDriveService) {
+      const drivePhotos = await GoogleDriveService.getPhotosFromFolder(data.driveUrl);
+      if (drivePhotos && drivePhotos.length > 0) {
+        photoList = drivePhotos;
+        document.getElementById('albumBadgeMeta').textContent = `${drivePhotos.length} FOTO (GOOGLE DRIVE) · ${new Date().getFullYear()}`;
+      }
+    }
+
+    // Inisialisasi Paginasi Foto (30 foto per batch)
+    allAlbumPhotos = photoList;
+    displayedPhotoCount = 0;
     const photosGrid = document.getElementById('photosGrid');
     photosGrid.innerHTML = '';
-    data.photos.forEach(imgUrl => {
-      const card = document.createElement('div');
-      card.className = 'album-photo-card';
-      card.style.backgroundImage = `url('${imgUrl}')`;
-      card.onclick = () => openLightbox(imgUrl);
 
-      card.innerHTML = `
-        <div class="photo-hover-overlay">
-          <span style="font-family: var(--mono); font-size: 10px; color: var(--white); background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 100px; border: 0.5px solid rgba(255,255,255,0.2);">
-            🔍 Perbesar Foto
-          </span>
+    if (allAlbumPhotos.length === 0) {
+      photosGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 48px 24px; text-align: center; color: var(--muted2); font-family: var(--mono); font-size: 12px; border: 0.5px dashed var(--border); border-radius: 6px;">
+          Belum ada foto yang tersedia dalam album ini.
         </div>
       `;
-      photosGrid.appendChild(card);
-    });
+      updateLoadMoreUI();
+    } else {
+      renderNextBatch();
+    }
 
-    // Load Related Albums
+    // Load Real Related Albums dari Database Supabase
+    const relatedSection = document.getElementById('relatedAlbumsSection');
     const relatedGrid = document.getElementById('relatedAlbumsGrid');
-    relatedGrid.innerHTML = '';
-    data.related.forEach(relId => {
-      const relData = albumDatabase[relId];
-      if (!relData) return;
+    if (relatedGrid) {
+      relatedGrid.innerHTML = '';
+      const otherAlbums = (remoteAlbums || []).filter(a => (a.slug || a.id) !== (data.slug || data.id) && String(a.id) !== String(data.id));
 
-      const relCard = document.createElement('div');
-      relCard.style.cssText = 'background: var(--surface); border: 0.5px solid var(--border); border-radius: 6px; padding: 16px; cursor: pointer; transition: transform 0.3s, border-color 0.3s;';
-      relCard.onmouseenter = () => { relCard.style.transform = 'translateY(-4px)'; relCard.style.borderColor = 'var(--border2)'; };
-      relCard.onmouseleave = () => { relCard.style.transform = 'none'; relCard.style.borderColor = 'var(--border)'; };
-      relCard.onclick = () => { window.location.href = 'detail.html?id=' + relId; };
+      if (otherAlbums.length > 0) {
+        if (relatedSection) relatedSection.style.display = 'block';
+        otherAlbums.slice(0, 3).forEach(relAlbum => {
+          const relCard = document.createElement('div');
+          const relCat = relAlbum.categories ? relAlbum.categories.name : (relAlbum.category || 'Kegiatan');
+          const relCover = relAlbum.cover_urls || relAlbum.cover_url || 'assets/haflah1.JPG';
+          const relId = relAlbum.slug || relAlbum.id;
 
-      relCard.innerHTML = `
-        <div style="height: 160px; border-radius: 4px; background-image: url('${relData.photos[0]}'); background-size: cover; background-position: center; margin-bottom: 14px;"></div>
-        <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">${relData.category}</span>
-        <h4 style="font-family: var(--serif); font-size: 18px; color: var(--white); font-weight: 500; margin: 4px 0 8px;">${relData.title}</h4>
-        <p style="font-size: 11px; color: var(--muted1); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; line-height: 1.5;">${relData.description}</p>
-        <span style="font-family: var(--mono); font-size: 10px; color: var(--white); text-decoration: underline;">Buka Album Ini →</span>
-      `;
-      relatedGrid.appendChild(relCard);
-    });
+          relCard.style.cssText = 'background: var(--surface); border: 0.5px solid var(--border); border-radius: 6px; padding: 16px; cursor: pointer; transition: transform 0.3s, border-color 0.3s;';
+          relCard.onmouseenter = () => { relCard.style.transform = 'translateY(-4px)'; relCard.style.borderColor = 'var(--border2)'; };
+          relCard.onmouseleave = () => { relCard.style.transform = 'none'; relCard.style.borderColor = 'var(--border)'; };
+          relCard.onclick = () => { window.location.href = 'detail.html?id=' + relId; };
+
+          relCard.innerHTML = `
+            <div style="height: 160px; border-radius: 4px; background-image: url('${relCover}'); background-size: cover; background-position: center; margin-bottom: 14px;"></div>
+            <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">${relCat}</span>
+            <h4 style="font-family: var(--serif); font-size: 18px; color: var(--white); font-weight: 500; margin: 4px 0 8px;">${relAlbum.title}</h4>
+            <p style="font-size: 11px; color: var(--muted1); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; line-height: 1.5;">${relAlbum.description || 'Dokumentasi kegiatan resmi SMAPSI.'}</p>
+            <span style="font-family: var(--mono); font-size: 10px; color: var(--white); text-decoration: underline;">Buka Album Ini →</span>
+          `;
+          relatedGrid.appendChild(relCard);
+        });
+      } else {
+        if (relatedSection) relatedSection.style.display = 'none';
+      }
+    }
 
     checkSavedAlbumState();
   }
@@ -486,15 +513,16 @@
       return;
     }
 
-    const albumId = getQueryParam('id') || 'wisuda-2024';
-    const data = albumDatabase[albumId] || albumDatabase['wisuda-2024'];
-    const photoCount = data.photos ? data.photos.length : 0;
-    const coverUrl = data.photos && data.photos.length > 0 ? data.photos[0] : '';
+    const albumId = getQueryParam('id') || 'album';
+    const title = document.getElementById('albumTitle')?.textContent || 'Album Foto';
+    const category = document.getElementById('albumBadgeCat')?.textContent || 'Kegiatan';
+    const photoCount = allAlbumPhotos ? allAlbumPhotos.length : 0;
+    const coverUrl = allAlbumPhotos.length > 0 ? (typeof allAlbumPhotos[0] === 'object' ? (allAlbumPhotos[0].thumbnail || allAlbumPhotos[0].url) : allAlbumPhotos[0]) : '';
 
     const albumObj = {
       slug: albumId,
-      title: data.title,
-      category: data.category,
+      title: title,
+      category: category,
       coverUrl: coverUrl,
       photoCount: photoCount
     };
@@ -510,14 +538,137 @@
     }
   }
 
-  function openLightbox(imgUrl) {
-    document.getElementById('lightboxImg').src = imgUrl;
-    document.getElementById('lightbox').style.display = 'flex';
+  const BATCH_SIZE = 30;
+  let allAlbumPhotos = [];
+  let displayedPhotoCount = 0;
+
+  function renderPhotoCard(photoItem, index) {
+    const imgUrl = (typeof photoItem === 'object' && photoItem !== null) ? (photoItem.url || photoItem.thumbnail) : photoItem;
+    const thumbUrl = (typeof photoItem === 'object' && photoItem !== null) ? (photoItem.thumbnail || photoItem.url) : photoItem;
+    const downloadUrl = (typeof photoItem === 'object' && photoItem !== null && photoItem.downloadUrl) ? photoItem.downloadUrl : imgUrl;
+
+    const card = document.createElement('div');
+    card.className = 'album-photo-card';
+    card.style.backgroundImage = `url('${thumbUrl}')`;
+    card.onclick = () => openLightbox(imgUrl, index, downloadUrl);
+
+    return card;
+  }
+
+  function renderNextBatch() {
+    const photosGrid = document.getElementById('photosGrid');
+    if (!photosGrid) return;
+
+    const nextBatch = allAlbumPhotos.slice(displayedPhotoCount, displayedPhotoCount + BATCH_SIZE);
+    nextBatch.forEach((photo, idx) => {
+      const card = renderPhotoCard(photo, displayedPhotoCount + idx);
+      photosGrid.appendChild(card);
+    });
+
+    displayedPhotoCount += nextBatch.length;
+    updateLoadMoreUI();
+  }
+
+  function updateLoadMoreUI() {
+    const loadMoreContainer = document.getElementById('loadMoreContainer');
+    const loadMoreCounter = document.getElementById('loadMoreCounter');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const photoCountBadge = document.getElementById('photoCountBadge');
+
+    const total = allAlbumPhotos.length;
+    if (photoCountBadge) {
+      photoCountBadge.textContent = total > 0 ? `${displayedPhotoCount} / ${total} Foto Ditampilkan` : '';
+    }
+
+    if (!loadMoreContainer) return;
+
+    if (total === 0) {
+      loadMoreContainer.style.display = 'none';
+      return;
+    }
+
+    if (displayedPhotoCount >= total) {
+      if (total > BATCH_SIZE) {
+        loadMoreContainer.style.display = 'block';
+        if (loadMoreCounter) loadMoreCounter.textContent = `Semua ${total} foto telah ditampilkan`;
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+      } else {
+        loadMoreContainer.style.display = 'none';
+      }
+    } else {
+      loadMoreContainer.style.display = 'block';
+      if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'inline-flex';
+        loadMoreBtn.innerHTML = `
+          <span>Lihat Selengkapnya</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        `;
+      }
+      if (loadMoreCounter) {
+        loadMoreCounter.textContent = `Menampilkan ${displayedPhotoCount} dari ${total} Foto`;
+      }
+    }
+  }
+
+  function loadMorePhotos() {
+    renderNextBatch();
+  }
+
+  function openLightbox(imgUrl, index, downloadUrl) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCat = document.getElementById('lightboxCat');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxCount = document.getElementById('lightboxCount');
+    const lightboxDownloadBtn = document.getElementById('lightboxDownloadBtn');
+
+    const albumBadgeCat = document.getElementById('albumBadgeCat');
+    const albumTitle = document.getElementById('albumTitle');
+
+    if (lightboxCat) lightboxCat.textContent = albumBadgeCat ? albumBadgeCat.textContent.trim() : 'Kegiatan';
+    if (lightboxTitle) lightboxTitle.textContent = albumTitle ? albumTitle.textContent.trim() : 'Detail Foto';
+    if (lightboxCount) {
+      if (typeof index === 'number') {
+        lightboxCount.textContent = `Foto ${index + 1} dari ${allAlbumPhotos.length}`;
+      } else {
+        lightboxCount.textContent = `Dokumentasi Resmi`;
+      }
+    }
+    if (lightboxDownloadBtn) {
+      lightboxDownloadBtn.href = downloadUrl || imgUrl;
+    }
+
+    if (lightboxImg) {
+      lightboxImg.src = imgUrl;
+    }
+
+    if (lightbox) {
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
   }
 
   function closeLightbox() {
-    document.getElementById('lightbox').style.display = 'none';
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   }
+
+  // Close lightbox on backdrop click or ESC key
+  const lightboxEl = document.getElementById('lightbox');
+  if (lightboxEl) {
+    lightboxEl.addEventListener('click', (e) => {
+      if (e.target === lightboxEl) closeLightbox();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
 
   document.addEventListener('DOMContentLoaded', loadAlbumData);
 </script>

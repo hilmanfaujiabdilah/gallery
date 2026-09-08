@@ -17,6 +17,7 @@
 <script src="../js/gallery-service.js"></script>
 <script src="../js/category-service.js"></script>
 <script src="../js/user-service.js"></script>
+<script src="../js/google-drive-service.js"></script>
 <script src="../js/popup.js"></script>
 <script src="../js/profile-modal.js"></script>
 </head>
@@ -196,11 +197,11 @@
           <h2 class="panel-title">Tambahkan Album Foto Baru</h2>
         </div>
 
-        <form onsubmit="event.preventDefault(); showLuxuryModal({ title: 'Album Disimpan', message: 'Album foto baru berhasil ditambahkan dan langsung terintegrasi dengan galeri utama.', type: 'success' });">
+        <form id="addAlbumForm" onsubmit="handleCreateAlbumSubmit(event)">
           <div class="form-row">
             <div class="form-group-admin">
               <label>Judul Kegiatan / Album</label>
-              <input type="text" placeholder="contoh: Wisuda Angkatan 2024" required>
+              <input type="text" id="addAlbumTitle" placeholder="contoh: Wisuda Angkatan 2024" required>
             </div>
             <div class="form-group-admin">
               <label>Kategori Foto</label>
@@ -215,26 +216,52 @@
               </select>
             </div>
             <div class="form-group-admin">
-              <label>Jumlah Foto dalam Album</label>
-              <input type="number" placeholder="contoh: 248" value="100" required>
+              <label>Tanggal Pelaksanaan Kegiatan</label>
+              <input type="date" id="addAlbumEventDate" required>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group-admin">
-              <label>Link Foto Cover / Sampel Album (Bisa lebih dari 1 link)</label>
-              <input type="text" placeholder="Masukkan link Drive cover album (gunakan koma jika lebih dari satu)" required>
+              <label>Link Folder Album Google Drive</label>
+              <input type="text" id="addAlbumDrive" placeholder="https://drive.google.com/drive/folders/1XYZ..." required>
             </div>
             <div class="form-group-admin">
-              <label>Link Folder Album Google Drive</label>
-              <input type="text" placeholder="https://drive.google.com/drive/folders/1XYZ...">
+              <label>Jumlah Foto dalam Album</label>
+              <input type="number" id="addAlbumPhotoCount" placeholder="contoh: 248" value="100" required>
+            </div>
+            <div class="form-group-admin">
+              <label>Tampilkan di Halaman Utama</label>
+              <select id="addAlbumFeatured" required>
+                <option value="false" selected>Tidak</option>
+                <option value="true">Ya</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group-admin" style="grid-column: 1 / -1;">
+              <label>Upload Foto Cover Album (.jpg, .png, .webp)</label>
+              <div style="display: flex; gap: 12px; align-items: center; background: var(--surface); padding: 12px 16px; border: 1px dashed var(--border2); border-radius: 6px;">
+                <input type="file" id="addAlbumCoverFile" accept="image/*" onchange="previewAddAlbumCover(this)" required style="display: none;">
+                <button type="button" onclick="document.getElementById('addAlbumCoverFile').click()" class="action-btn" style="padding: 8px 16px; background: rgba(255,255,255,0.08); color: var(--white); font-size: 11px; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                  📁 <span>Pilih File Cover...</span>
+                </button>
+                <div id="addAlbumCoverPreviewWrap" style="display: none; align-items: center; gap: 10px;">
+                  <img id="addAlbumCoverPreviewImg" src="" style="width: 48px; height: 36px; object-fit: cover; border-radius: 4px; border: 0.5px solid var(--border2);">
+                  <span id="addAlbumCoverFileName" style="font-size: 11px; color: var(--light); font-family: var(--mono);"></span>
+                </div>
+                <div style="font-size: 10.5px; color: var(--muted2); margin-left: auto;">
+                  Rekomendasi rasio 16:9 atau 4:3
+                </div>
+              </div>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group-admin" style="grid-column: 1 / -1;">
               <label>Deskripsi Kegiatan / Album</label>
-              <textarea rows="3" placeholder="Tuliskan deskripsi ringkas mengenai kegiatan ini untuk ditampilkan pada halaman detail album..." style="resize: vertical;"></textarea>
+              <textarea id="addAlbumDescription" rows="3" placeholder="Tuliskan deskripsi ringkas mengenai kegiatan ini untuk ditampilkan pada halaman detail album..." style="resize: vertical;"></textarea>
             </div>
           </div>
 
@@ -244,8 +271,9 @@
 
       <!-- Table Daftar Foto -->
       <div class="panel-card">
-        <div class="panel-header">
+        <div class="panel-header" style="justify-content: space-between; align-items: center;">
           <h2 class="panel-title">Daftar Album Foto di Galeri</h2>
+          <span id="galleryAlbumCountBadge" class="badge badge-info" style="font-size: 10px;">Memuat...</span>
         </div>
 
         <div class="data-table-wrap">
@@ -255,31 +283,13 @@
                 <th>Preview</th>
                 <th>Judul Foto</th>
                 <th>Kategori</th>
+                <th>Tahun</th>
                 <th>Link Drive</th>
                 <th>Aksi</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td><img src="../assets/haflah1.JPG" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
-                <td><strong>Haflah Akhirussanah 2026</strong></td>
-                <td><span class="badge badge-info">Wisuda</span></td>
-                <td><a href="https://drive.google.com" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px;">Buka Folder ↗</a></td>
-                <td>
-                  <button class="action-btn" onclick="openEditAlbumModal('Haflah Akhirussanah 2026', 'wisuda', 248, 'https://drive.google.com/file/d/1A2B3C.../view?usp=sharing', 'https://drive.google.com', 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI. Mengabadikan setiap momen berharga.')">Edit</button>
-                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Haflah Akhirussanah 2026</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
-                </td>
-              </tr>
-              <tr>
-                <td><img src="../assets/heroimages-osis.jpg" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px;"></td>
-                <td><strong>Pelantikan OSIS 2024</strong></td>
-                <td><span class="badge badge-info">OSIS</span></td>
-                <td><a href="https://drive.google.com" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px;">Buka Folder ↗</a></td>
-                <td>
-                  <button class="action-btn" onclick="openEditAlbumModal('Pelantikan OSIS 2024', 'osis', 64, 'https://drive.google.com/file/d/4D5E6F.../view?usp=sharing', 'https://drive.google.com', 'Upacara pengukuhan dan serah terima pengurus OSIS SMAPSI 2024.')">Edit</button>
-                  <button class="action-btn delete" onclick="showLuxuryModal({ title: 'Hapus Album Foto', message: 'Apakah Anda yakin ingin menghapus album <strong>Pelantikan OSIS 2024</strong> dari galeri?', type: 'danger', confirmText: 'Ya, Hapus', cancelText: 'Batal', onConfirm: () => showToast('Album foto berhasil dihapus', 'success') })">Hapus</button>
-                </td>
-              </tr>
+            <tbody id="galleryAlbumsTableBody">
+              <!-- Injected via JavaScript -->
             </tbody>
           </table>
         </div>
@@ -526,302 +536,53 @@
     </div>
 
     <!-- PANEL 4: MULTI-AKUN GOOGLE DRIVE (150 GB STORAGE POOL) -->
+    <!-- PANEL 4: KELOLA GOOGLE DRIVE (MASTER FOLDER 5 TB) -->
     <div id="panel-storage" class="tab-content">
-      <!-- Overview Card -->
+      <!-- Master Folder Overview Card -->
       <div class="panel-card storage-overview-card">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">☁️ Multi-Cloud Storage Pool (<span id="totalAccountCountText">10</span> Akun Google Drive)</h2>
-            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px; font-family: var(--mono);">Total Kapasitas Terpusat: <span id="totalStorageGBText">150.0 GB</span> · <span id="totalAccountCountSub">10</span> Akun Gmail Gratis Terhubung</div>
-          </div>
-          <button class="btn-primary" onclick="openAddDriveAccountModal()">+ Hubungkan Akun Google Baru</button>
-        </div>
-
-        <!-- Progress Usage Bar -->
-        <div style="margin-top: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 11px; margin-bottom: 8px;">
-            <span style="color: var(--white); font-weight: 500;">Penyimpanan Terpakai: <strong>28.5 GB</strong> / 150.0 GB</span>
-            <span style="color: #4ade80;">19% Terpakai · 121.5 GB Tersedia</span>
-          </div>
-          <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden; border: 0.5px solid var(--border);">
-            <div style="width: 19%; height: 100%; background: linear-gradient(90deg, #22c55e 0%, #4ade80 100%); border-radius: 100px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Grid 10 Akun Google Drive -->
-      <div class="panel-card">
-        <div class="panel-header">
-          <h2 class="panel-title">Daftar 10 Akun Google Drive Terhubung</h2>
-          <span class="badge badge-success">● 10/10 Akun Aktif (150 GB)</span>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-          
-          <!-- Akun 1 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #1 · KATEGORI WISUDA</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.wisuda.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              4.2 GB / 15.0 GB Terpakai (28%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 28%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.wisuda.smapsi@gmail.com lancar! (88ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 2 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #2 · KATEGORI OSIS</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.osis.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              3.8 GB / 15.0 GB Terpakai (25%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 25%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.osis.smapsi@gmail.com lancar! (94ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 3 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #3 · KATEGORI OLAHRAGA</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.olahraga.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              2.1 GB / 15.0 GB Terpakai (14%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 14%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.olahraga.smapsi@gmail.com lancar! (102ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 4 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #4 · KATEGORI SENI BUDAYA</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.seni.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              1.9 GB / 15.0 GB Terpakai (12%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 12%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.seni.smapsi@gmail.com lancar! (90ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 5 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #5 · KATEGORI STUDY TOUR</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.tour.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              5.4 GB / 15.0 GB Terpakai (36%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 36%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.tour.smapsi@gmail.com lancar! (110ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 6 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #6 · KATEGORI LOMBA</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.lomba.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              2.8 GB / 15.0 GB Terpakai (18%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 18%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.lomba.smapsi@gmail.com lancar! (95ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 7 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #7 · ARSIP 2024</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.arsip2024.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-success">● Aktif</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              6.1 GB / 15.0 GB Terpakai (40%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 40%; height: 100%; background: #fbbf24;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.arsip2024.smapsi@gmail.com lancar! (115ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 8 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #8 · CADANGAN #1</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan1.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-info">● Standby</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              0.8 GB / 15.0 GB Terpakai (5%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 5%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan1.smapsi@gmail.com lancar! (80ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 9 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #9 · CADANGAN #2</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan2.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-info">● Standby</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              0.4 GB / 15.0 GB Terpakai (2%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 2%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan2.smapsi@gmail.com lancar! (82ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-          <!-- Akun 10 -->
-          <div style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-              <div>
-                <span style="font-family: var(--mono); font-size: 9px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;">AKUN #10 · CADANGAN #3</span>
-                <h4 style="font-size: 13px; color: var(--white); margin-top: 2px;">drive.cadangan3.smapsi@gmail.com</h4>
-              </div>
-              <span class="badge badge-info">● Standby</span>
-            </div>
-            <div style="font-family: var(--mono); font-size: 10px; color: var(--muted1); margin-bottom: 6px;">
-              0.0 GB / 15.0 GB Terpakai (0%)
-            </div>
-            <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-bottom: 14px;">
-              <div style="width: 0%; height: 100%; background: #4ade80;"></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <a href="https://drive.google.com" target="_blank" class="action-btn" style="text-decoration: none; font-size: 9px;">Buka Drive ↗</a>
-              <button class="action-btn" onclick="showToast('Koneksi API ke drive.cadangan3.smapsi@gmail.com lancar! (79ms)', 'success')" style="font-size: 9px;">Tes API</button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- IN-APP GOOGLE DRIVE FILE EXPLORER -->
-      <div class="panel-card" style="border-color: rgba(255, 255, 255, 0.15);">
         <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
           <div>
-            <h2 class="panel-title">📂 Google Drive File Explorer (Manajer Folder & Foto In-App)</h2>
-            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px; font-family: var(--mono);" id="explorerBreadcrumb">
-              Drive Saya &gt; <span style="color: var(--white);" id="currentAccountLabel">drive.wisuda.smapsi@gmail.com</span>
+            <h2 class="panel-title">☁️ Master Folder Galeri (Google Drive 5 TB)</h2>
+            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px; font-family: var(--mono);">
+              Folder Induk Terhubung: <span style="color: var(--white); font-weight: 500;">📁 [GALERI UTAMA SMAPSI]</span> · ID: <span style="color: var(--light);">1iFCY5EkdVfV11P2eJ0rjmEqozan1rkyI</span>
             </div>
           </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="https://drive.google.com/drive/folders/1iFCY5EkdVfV11P2eJ0rjmEqozan1rkyI?usp=sharing" target="_blank" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 11px;">
+              <span>Buka Folder Master di Drive ↗</span>
+            </a>
+            <button class="action-btn" onclick="loadDriveSubfoldersList(); showToast('Daftar folder berhasil direfresh', 'info');" style="padding: 8px 14px; font-size: 11px;">
+              🔄 Refresh Folder
+            </button>
+          </div>
+        </div>
+      </div>
 
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <!-- Account Selector Dropdown -->
-            <select id="explorerAccountSelect" onchange="switchDriveExplorerAccount(this.value)" style="background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 7px 12px; color: var(--white); font-family: var(--mono); font-size: 10.5px;">
-              <option value="drive.wisuda.smapsi@gmail.com">drive.wisuda.smapsi@gmail.com (Wisuda)</option>
-              <option value="drive.osis.smapsi@gmail.com">drive.osis.smapsi@gmail.com (OSIS)</option>
-              <option value="drive.olahraga.smapsi@gmail.com">drive.olahraga.smapsi@gmail.com (Olahraga)</option>
-              <option value="drive.seni.smapsi@gmail.com">drive.seni.smapsi@gmail.com (Seni Budaya)</option>
-              <option value="drive.tour.smapsi@gmail.com">drive.tour.smapsi@gmail.com (Study Tour)</option>
-              <option value="drive.lomba.smapsi@gmail.com">drive.lomba.smapsi@gmail.com (Lomba)</option>
-              <option value="drive.arsip2024.smapsi@gmail.com">drive.arsip2024.smapsi@gmail.com (Arsip 2024)</option>
-              <option value="drive.cadangan1.smapsi@gmail.com">drive.cadangan1.smapsi@gmail.com (Cadangan #1)</option>
-            </select>
-
-            <button class="btn-primary" onclick="openCreateFolderModal()" style="padding: 7px 14px; font-size: 9.5px;">+ Buat Folder Baru</button>
-            <button class="btn-primary" onclick="openUploadPhotoModal()" style="padding: 7px 14px; font-size: 9.5px; background: rgba(255,255,255,0.1); color: var(--white); border: 0.5px solid var(--border2);">📤 Upload Foto</button>
-            <button class="action-btn" onclick="renderDriveExplorerUI(); showToast('Drive berhasil direfresh', 'info');" style="padding: 7px 12px; font-size: 9.5px;">🔄 Refresh</button>
+      <!-- Subfolder Album Management Card -->
+      <div class="panel-card">
+        <div class="panel-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 class="panel-title">📁 Struktur Folder Kategori & Album di Google Drive</h2>
+            <div style="font-size: 11px; color: var(--muted1); margin-top: 4px;">
+              Pilih kategori untuk melihat album di dalamnya, buat/edit/hapus folder, atau klik <strong>"➕ Jadi Album"</strong> untuk mendaftarkannya ke website.
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button class="btn-primary" onclick="openCreateAlbumFolderModal()" style="padding: 8px 16px; font-size: 11px; display: inline-flex; align-items: center; gap: 6px;">
+              <span>+ Buat Folder Album Baru</span>
+            </button>
+            <span id="adminSubfolderCountBadge" class="badge badge-info">Memuat folder...</span>
           </div>
         </div>
 
-        <!-- Section 1: Daftar Folder Drive -->
-        <div style="margin-bottom: 24px;">
-          <h4 style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted1); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <span>📁 DAFTAR FOLDER</span>
-            <span id="folderCountBadge" style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--light);">4 Folder</span>
-          </h4>
-
-          <div class="drive-grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;" id="driveFolderGrid">
-            <!-- Injected via JavaScript -->
-          </div>
+        <!-- Category Filter Tabs -->
+        <div id="driveCategoryTabs" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 0.5px solid var(--border);">
+          <!-- Injected via JavaScript -->
         </div>
 
-        <!-- Section 2: Daftar Foto / File dalam Folder -->
-        <div>
-          <h4 style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted1); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <span>🖼️ FOTO & FILE DALAM FOLDER</span>
-            <span id="fileCountBadge" style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: var(--light);">3 File</span>
-          </h4>
-
-          <div class="drive-grid-responsive" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;" id="driveFileGrid">
-            <!-- Injected via JavaScript -->
-          </div>
+        <!-- Dynamic Subfolders Grid -->
+        <div id="adminSubfoldersGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+          <!-- Injected via JavaScript -->
         </div>
       </div>
     </div>
@@ -855,6 +616,7 @@
     </div>
 
     <form onsubmit="handleSaveEditAlbum(event)">
+      <input type="hidden" id="editAlbumIdHidden">
       <div class="form-row" style="margin-bottom: 12px;">
         <div class="form-group-admin">
           <label>Judul Kegiatan / Album</label>
@@ -873,19 +635,43 @@
           </select>
         </div>
         <div class="form-group-admin">
-          <label>Jumlah Foto</label>
-          <input type="number" id="editJumlah" required>
+          <label>Tanggal Pelaksanaan Kegiatan</label>
+          <input type="date" id="editEventDate" required>
         </div>
       </div>
 
       <div class="form-row" style="margin-bottom: 12px;">
         <div class="form-group-admin">
-          <label>Link Foto Cover / Sampel Album</label>
-          <input type="text" id="editCover" placeholder="Masukkan link Drive cover album (gunakan koma jika lebih dari satu)" required>
+          <label>Link Folder Google Drive</label>
+          <input type="text" id="editDrive" placeholder="https://drive.google.com/drive/folders/..." required>
         </div>
         <div class="form-group-admin">
-          <label>Link Folder Google Drive</label>
-          <input type="text" id="editDrive" placeholder="https://drive.google.com/drive/folders/...">
+          <label>Jumlah Foto</label>
+          <input type="number" id="editJumlah" required>
+        </div>
+        <div class="form-group-admin">
+          <label>Tampilkan di Halaman Utama</label>
+          <select id="editAlbumFeatured" required>
+            <option value="false" selected>Tidak</option>
+            <option value="true">Ya</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-bottom: 14px;">
+        <div class="form-group-admin" style="grid-column: 1 / -1;">
+          <label>Foto Cover Album (.jpg, .png, .webp)</label>
+          <div style="display: flex; gap: 12px; align-items: center; background: var(--surface); padding: 12px 16px; border: 1px dashed var(--border2); border-radius: 6px;">
+            <input type="file" id="editCoverFile" accept="image/*" onchange="previewEditAlbumCover(this)" style="display: none;">
+            <input type="hidden" id="editCoverUrlHidden">
+            <button type="button" onclick="document.getElementById('editCoverFile').click()" class="action-btn" style="padding: 8px 16px; font-size: 11px; background: rgba(255,255,255,0.08); color: var(--white); border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+              📁 <span>Ganti Foto Cover...</span>
+            </button>
+            <div id="editCoverPreviewWrap" style="display: flex; align-items: center; gap: 10px;">
+              <img id="editCoverPreviewImg" src="" style="width: 48px; height: 36px; object-fit: cover; border-radius: 4px; border: 0.5px solid var(--border2);">
+              <span id="editCoverFileName" style="font-size: 10.5px; color: var(--muted2); font-family: var(--mono);"></span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1089,6 +875,122 @@
   </div>
 </div>
 
+<!-- BUAT FOLDER ALBUM DRIVE BARU MODAL -->
+<div class="luxury-overlay" id="createAlbumFolderOverlay">
+  <div class="luxury-modal" style="max-width: 460px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        📁 Buat Folder Album Baru di Drive
+      </h3>
+      <button onclick="closeCreateAlbumFolderModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+
+    <form onsubmit="handleCreateAlbumFolderSubmit(event)">
+      <div class="form-group-admin" style="margin-bottom: 14px;">
+        <label>Pilih Kategori Kegiatan</label>
+        <select id="newFolderCategorySelect" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+          <!-- Dynamically populated -->
+          <option value="Wisuda">Wisuda</option>
+          <option value="OSIS">OSIS</option>
+          <option value="Olahraga">Olahraga</option>
+          <option value="Seni Budaya">Seni Budaya</option>
+          <option value="Study Tour">Study Tour</option>
+          <option value="Lomba">Lomba</option>
+        </select>
+      </div>
+
+      <div class="form-group-admin" style="margin-bottom: 20px;">
+        <label>Nama Folder Album</label>
+        <input type="text" id="newAlbumFolderNameInput" placeholder="contoh: Wisuda Angkatan 2026" required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeCreateAlbumFolderModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">+ Buat Folder</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT NAMA FOLDER ALBUM DRIVE MODAL -->
+<div class="luxury-overlay" id="editDriveFolderOverlay">
+  <div class="luxury-modal" style="max-width: 460px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <h3 style="font-family: var(--serif); font-size: 19px; font-weight: 600; color: var(--white); margin: 0;">
+        ✏️ Edit Nama Folder Album
+      </h3>
+      <button onclick="closeEditDriveFolderModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+
+    <form onsubmit="handleEditDriveFolderSubmit(event)">
+      <input type="hidden" id="editDriveFolderId">
+      <input type="hidden" id="editDriveFolderCategory">
+
+      <div class="form-group-admin" style="margin-bottom: 14px;">
+        <label>Kategori</label>
+        <input type="text" id="editDriveFolderCategoryDisplay" disabled style="width: 100%; background: var(--surface); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--muted1); font-size: 12px;">
+      </div>
+
+      <div class="form-group-admin" style="margin-bottom: 20px;">
+        <label>Nama Baru Folder</label>
+        <input type="text" id="editDriveFolderNameInput" placeholder="Nama folder..." required style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 9px 12px; color: var(--white); font-size: 12px;">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="modal-btn modal-btn-secondary" onclick="closeEditDriveFolderModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+        <button type="submit" class="modal-btn modal-btn-primary" style="flex: initial; padding: 8px 22px;">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- KEAMANAN TINGKAT 3: DELETE DRIVE FOLDER SECURITY MODAL (TYPE-TO-CONFIRM) -->
+<div class="luxury-overlay" id="deleteDriveFolderSecurityOverlay">
+  <div class="luxury-modal" style="max-width: 480px; text-align: left; padding: 24px 28px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: #ef4444; font-size: 20px;">🛡️</span>
+        <h3 style="font-family: var(--serif); font-size: 18px; font-weight: 600; color: #ef4444; margin: 0;">
+          Konfirmasi Keamanan Penghapusan
+        </h3>
+      </div>
+      <button onclick="closeDeleteDriveFolderSecurityModal()" style="background: none; border: none; color: var(--muted1); font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+
+    <div style="background: rgba(239, 68, 68, 0.08); border: 0.5px solid rgba(239, 68, 68, 0.25); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px;">
+      <div style="font-size: 12px; color: var(--white); font-weight: 500; margin-bottom: 4px;">
+        ⚠️ Peringatan Keamanan Tingkat Tinggi
+      </div>
+      <div style="font-size: 11px; color: var(--muted1); line-height: 1.5;">
+        Tindakan ini akan menghapus folder <strong id="secDeleteFolderNameText" style="color: #f87171;"></strong> dari kategori <span id="secDeleteCategoryBadge" class="badge badge-info" style="font-size: 9px; padding: 1px 6px;"></span> dan memindahkannya ke Sampah Google Drive.
+      </div>
+    </div>
+
+    <div class="form-group-admin" style="margin-bottom: 18px;">
+      <label style="font-size: 11px; color: var(--muted1); display: block; margin-bottom: 6px;">
+        Untuk mencegah ketidaksengajaan/salah klik, ketik persis nama folder di bawah ini:
+      </label>
+      <div style="font-family: var(--mono); font-size: 12px; color: var(--white); background: var(--surface); padding: 8px 12px; border-radius: 4px; border: 0.5px dashed var(--border2); margin-bottom: 10px; user-select: all;" id="secDeleteTargetVerificationText">
+        Nama Folder
+      </div>
+      <input type="text" id="secDeleteVerificationInput" oninput="handleSecDeleteValidation()" placeholder="Ketik nama folder di sini untuk membuka kunci..." autocomplete="off" style="width: 100%; background: var(--deep); border: 0.5px solid var(--border2); border-radius: 5px; padding: 10px 12px; color: var(--white); font-size: 12px;">
+    </div>
+
+    <div style="font-size: 10px; color: var(--muted2); line-height: 1.4; margin-bottom: 18px;">
+      💡 <em>Catatan Pemulihan: Folder yang terhapus masih tersimpan di folder <strong>Sampah (Trash) Google Drive</strong> selama 30 hari jika sewaktu-waktu ingin dipulihkan.</em>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+      <button type="button" class="modal-btn modal-btn-secondary" onclick="closeDeleteDriveFolderSecurityModal()" style="flex: initial; padding: 8px 18px;">Batal</button>
+      <button type="button" id="btnExecuteSecurityDelete" class="modal-btn modal-btn-danger" onclick="executeSecurityDeleteAction()" disabled style="flex: initial; padding: 8px 22px; opacity: 0.35; cursor: not-allowed; transition: opacity 0.2s;">
+        🗑️ Hapus Folder Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
   function toggleAdminSidebar() {
     if (window.innerWidth <= 900) {
@@ -1121,8 +1023,10 @@
     const titleEl = document.getElementById('pageTitle');
     if (menuName === 'gallery') {
       titleEl.textContent = 'Kelola Gallery';
+      loadGalleryAlbumsList();
     } else if (menuName === 'storage') {
       titleEl.textContent = 'Kelola Drive';
+      loadDriveSubfoldersList();
     } else if (menuName === 'users') {
       titleEl.textContent = 'Kelola Akun User';
     } else if (menuName === 'logs') {
@@ -1193,14 +1097,188 @@
     }
   }
 
-  // Edit Album Modal Functions
-  function openEditAlbumModal(title, category, count, coverUrl, driveUrl, description) {
-    document.getElementById('editJudul').value = title || '';
-    document.getElementById('editKategori').value = (category || 'wisuda').toLowerCase();
-    document.getElementById('editJumlah').value = count || 100;
-    document.getElementById('editCover').value = coverUrl || '';
-    document.getElementById('editDrive').value = driveUrl || '';
-    document.getElementById('editDeskripsi').value = description || '';
+  // Cover File Previews & Handlers
+  function previewAddAlbumCover(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('addAlbumCoverPreviewImg').src = e.target.result;
+        document.getElementById('addAlbumCoverFileName').textContent = file.name;
+        document.getElementById('addAlbumCoverPreviewWrap').style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function previewEditAlbumCover(input) {
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('editCoverPreviewImg').src = e.target.result;
+        document.getElementById('editCoverFileName').textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // DYNAMIC GALLERY ALBUM MANAGEMENT (DIRECT SUPABASE POSTGRESQL)
+  // ══════════════════════════════════════════════════════════════════════════
+  let galleryAlbumsList = [];
+
+  async function loadGalleryAlbumsList() {
+    const tbody = document.getElementById('galleryAlbumsTableBody');
+    const badge = document.getElementById('galleryAlbumCountBadge');
+    if (!tbody) return;
+
+    if (document.getElementById('addAlbumEventDate') && !document.getElementById('addAlbumEventDate').value) {
+      document.getElementById('addAlbumEventDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    // Bersihkan sisa dataset lokal / fallback
+    localStorage.removeItem('local_gallery_albums');
+    localStorage.removeItem('local_gdrive_tree');
+
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted1); padding: 32px 16px; font-family: var(--mono); font-size: 11px;">⏳ Mengambil data album langsung dari Supabase PostgreSQL...</td></tr>`;
+
+    try {
+      if (window.GalleryService && typeof GalleryService.getAlbums === 'function') {
+        galleryAlbumsList = await GalleryService.getAlbums();
+      } else {
+        galleryAlbumsList = [];
+      }
+    } catch (e) {
+      console.error('Gagal mengambil album:', e);
+      galleryAlbumsList = [];
+    }
+
+    renderGalleryAlbumsTableUI();
+  }
+
+  function renderGalleryAlbumsTableUI() {
+    const tbody = document.getElementById('galleryAlbumsTableBody');
+    const badge = document.getElementById('galleryAlbumCountBadge');
+    if (!tbody) return;
+
+    if (badge) badge.textContent = `${galleryAlbumsList.length} Album Terdaftar`;
+    tbody.innerHTML = '';
+
+    if (!galleryAlbumsList || galleryAlbumsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--muted1); padding: 32px 16px; font-family: var(--mono); font-size: 11px;">Belum ada album foto tersimpan di database. Gunakan formulir di atas untuk menambahkan album baru.</td></tr>`;
+      return;
+    }
+
+    galleryAlbumsList.forEach((album, idx) => {
+      const tr = document.createElement('tr');
+      const coverSrc = album.cover_urls || album.cover_url || '../assets/haflah1.JPG';
+      const catName = album.categories ? album.categories.name : (album.category || album.category_id || 'Wisuda');
+      const yearDisplay = album.year || (album.event_date ? new Date(album.event_date).getFullYear() : (album.title.match(/\b(20\d{2})\b/) ? album.title.match(/\b(20\d{2})\b/)[1] : 2026));
+      const driveUrl = album.drive_url || 'https://drive.google.com';
+      const albumId = album.id || ('alb_' + idx);
+      const escapedTitle = (album.title || 'Album Foto').replace(/'/g, "\\'");
+
+      tr.innerHTML = `
+        <td>
+          <img src="${coverSrc}" style="width: 44px; height: 32px; object-fit: cover; border-radius: 2px; border: 0.5px solid var(--border2);" onerror="this.src='../assets/haflah1.JPG'">
+        </td>
+        <td>
+          <strong>${album.title}</strong>
+          <div style="font-size: 10px; color: var(--muted2); font-family: var(--mono); margin-top: 2px;">${album.photo_count || 0} Foto</div>
+        </td>
+        <td><span class="badge badge-info">${catName}</span></td>
+        <td><span style="font-family: var(--mono); font-size: 11px; color: var(--light);">${yearDisplay}</span></td>
+        <td>
+          <a href="${driveUrl}" target="_blank" style="color: var(--light); text-decoration: none; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;">
+            <span>Buka Folder ↗</span>
+          </a>
+        </td>
+        <td>
+          <button type="button" class="action-btn" onclick="openEditAlbumById('${albumId}')" style="padding: 4px 10px; font-size: 10px;">Edit</button>
+          <button type="button" class="action-btn delete" onclick="deleteGalleryAlbumAction('${albumId}', '${escapedTitle}')" style="padding: 4px 10px; font-size: 10px;">Hapus</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function handleCreateAlbumSubmit(e) {
+    e.preventDefault();
+    const title = document.getElementById('addAlbumTitle').value.trim();
+    const catSelect = document.getElementById('selectKategori');
+    const category_id = catSelect ? catSelect.value : 'wisuda';
+    const event_date = document.getElementById('addAlbumEventDate').value || new Date().toISOString().split('T')[0];
+    const year = event_date ? new Date(event_date).getFullYear() : 2026;
+    const drive_url = document.getElementById('addAlbumDrive').value.trim();
+    const photo_count = parseInt(document.getElementById('addAlbumPhotoCount').value) || 0;
+    const isFeatured = document.getElementById('addAlbumFeatured').value === 'true';
+    const coverFileInput = document.getElementById('addAlbumCoverFile');
+    const description = document.getElementById('addAlbumDescription').value.trim();
+
+    if (!title || !drive_url) {
+      showToast('Judul album dan Link Drive wajib diisi', 'error');
+      return;
+    }
+
+    let coverUrl = '../assets/haflah1.JPG';
+    if (coverFileInput && coverFileInput.files[0]) {
+      const file = coverFileInput.files[0];
+      if (window.GalleryService && typeof GalleryService.uploadCoverFile === 'function') {
+        coverUrl = await GalleryService.uploadCoverFile(file, title);
+      }
+    }
+
+    const payload = {
+      title: title,
+      category_id: category_id,
+      event_date: event_date,
+      year: year,
+      photo_count: photo_count,
+      cover_urls: coverUrl,
+      drive_url: drive_url,
+      description: description,
+      is_featured: isFeatured
+    };
+
+    if (window.GalleryService && typeof GalleryService.createAlbum === 'function') {
+      try {
+        await GalleryService.createAlbum(payload);
+        showToast(`Album "${title}" berhasil disimpan langsung ke database Supabase!`, 'success');
+      } catch (err) {
+        showToast(`Gagal menyimpan ke database: ${err.message}`, 'error');
+        return;
+      }
+    }
+
+    // Reset Form
+    document.getElementById('addAlbumForm').reset();
+    document.getElementById('addAlbumCoverPreviewWrap').style.display = 'none';
+    if (document.getElementById('addAlbumEventDate')) {
+      document.getElementById('addAlbumEventDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    // Refresh live list dari database Supabase
+    await loadGalleryAlbumsList();
+  }
+
+  function openEditAlbumById(albumId) {
+    const album = galleryAlbumsList.find(a => a.id === albumId);
+    if (!album) return;
+
+    const formattedDate = album.event_date ? album.event_date : (album.created_at ? new Date(album.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
+
+    document.getElementById('editAlbumIdHidden').value = album.id;
+    document.getElementById('editJudul').value = album.title || '';
+    document.getElementById('editKategori').value = (album.category_id || (album.categories ? album.categories.id : 'wisuda'));
+    document.getElementById('editEventDate').value = formattedDate;
+    document.getElementById('editDrive').value = album.drive_url || '';
+    document.getElementById('editJumlah').value = album.photo_count || 0;
+    document.getElementById('editAlbumFeatured').value = album.is_featured ? 'true' : 'false';
+    document.getElementById('editCoverUrlHidden').value = album.cover_urls || album.cover_url || '';
+    document.getElementById('editCoverPreviewImg').src = album.cover_urls || album.cover_url || '../assets/haflah1.JPG';
+    document.getElementById('editCoverFileName').textContent = 'Cover Tersimpan';
+    document.getElementById('editDeskripsi').value = album.description || '';
 
     const overlay = document.getElementById('editAlbumOverlay');
     if (overlay) overlay.classList.add('active');
@@ -1211,21 +1289,93 @@
     if (overlay) overlay.classList.remove('active');
   }
 
-  function handleSaveEditAlbum(e) {
+  async function handleSaveEditAlbum(e) {
     e.preventDefault();
+    const albumId = document.getElementById('editAlbumIdHidden').value;
+    const album = galleryAlbumsList.find(a => a.id === albumId);
+    if (!album) return;
+
+    const title = document.getElementById('editJudul').value.trim();
+    const catSelect = document.getElementById('editKategori');
+    const category_id = catSelect ? catSelect.value : 'wisuda';
+    const event_date = document.getElementById('editEventDate').value || new Date().toISOString().split('T')[0];
+    const year = event_date ? new Date(event_date).getFullYear() : 2026;
+    const drive_url = document.getElementById('editDrive').value.trim();
+    const photo_count = parseInt(document.getElementById('editJumlah').value) || 0;
+    const isFeatured = document.getElementById('editAlbumFeatured').value === 'true';
+    const coverFile = document.getElementById('editCoverFile').files[0];
+    let coverUrl = document.getElementById('editCoverUrlHidden').value;
+    const description = document.getElementById('editDeskripsi').value.trim();
+
+    if (coverFile) {
+      if (window.GalleryService && typeof GalleryService.uploadCoverFile === 'function') {
+        coverUrl = await GalleryService.uploadCoverFile(coverFile, title);
+      }
+    }
+
+    const payload = {
+      title: title,
+      category_id: category_id,
+      event_date: event_date,
+      year: year,
+      drive_url: drive_url,
+      photo_count: photo_count,
+      is_featured: isFeatured,
+      cover_urls: coverUrl,
+      description: description
+    };
+
+    if (window.GalleryService && typeof GalleryService.updateAlbum === 'function') {
+      try {
+        await GalleryService.updateAlbum(albumId, payload);
+        showToast(`Perubahan album "${title}" berhasil disimpan di database!`, 'success');
+      } catch (err) {
+        showToast(`Gagal update album: ${err.message}`, 'error');
+        return;
+      }
+    }
+
     closeEditAlbumModal();
-    showToast('Perubahan data album berhasil disimpan!', 'success');
+    await loadGalleryAlbumsList();
   }
 
-  // Dynamic Category Management Logic
-  let categoriesList = [
-    { id: 'wisuda', name: 'Wisuda', usedCount: 1 },
-    { id: 'osis', name: 'OSIS', usedCount: 1 },
-    { id: 'olahraga', name: 'Olahraga', usedCount: 0 },
-    { id: 'seni', name: 'Seni Budaya', usedCount: 0 },
-    { id: 'tour', name: 'Study Tour', usedCount: 0 },
-    { id: 'lomba', name: 'Lomba', usedCount: 0 }
-  ];
+  function deleteGalleryAlbumAction(albumId, albumTitle) {
+    showLuxuryModal({
+      title: 'Hapus Album Foto',
+      message: `Apakah Anda yakin ingin menghapus album <strong>"${albumTitle}"</strong> langsung dari database Supabase? Tindakan ini permanen.`,
+      type: 'danger',
+      confirmText: 'Ya, Hapus Permanen',
+      cancelText: 'Batal',
+      onConfirm: async () => {
+        if (window.GalleryService && typeof GalleryService.deleteAlbum === 'function') {
+          try {
+            await GalleryService.deleteAlbum(albumId);
+            showToast(`Album "${albumTitle}" berhasil dihapus dari database!`, 'success');
+          } catch (err) {
+            showToast(`Gagal menghapus album: ${err.message}`, 'error');
+          }
+        }
+        await loadGalleryAlbumsList();
+      }
+    });
+  }
+
+  // Dynamic Category Management Logic (Direct Supabase)
+  let categoriesList = [];
+
+  async function loadCategoriesListFromDB() {
+    if (window.CategoryService && typeof CategoryService.getCategories === 'function') {
+      try {
+        const cats = await CategoryService.getCategories();
+        if (Array.isArray(cats) && cats.length > 0) {
+          categoriesList = cats;
+        }
+      } catch (e) {
+        console.warn('Gagal memuat kategori dari DB:', e);
+      }
+    }
+    renderCategoryDropdowns();
+  }
 
   function renderCategoryDropdowns() {
     const selects = ['selectKategori', 'editKategori'];
@@ -1233,9 +1383,9 @@
       const el = document.getElementById(id);
       if (!el) return;
       const currentVal = el.value;
-      el.innerHTML = categoriesList.map(c => `<option value="${c.id}">${c.name}</option>`).join('') +
+      el.innerHTML = (categoriesList || []).map(c => `<option value="${c.id || c.slug}">${c.name}</option>`).join('') +
         `<option value="__manage_categories__">+ Kelola / Tambah Kategori...</option>`;
-      if (currentVal && categoriesList.some(c => c.id === currentVal)) {
+      if (currentVal && categoriesList.some(c => (c.id === currentVal || c.slug === currentVal))) {
         el.value = currentVal;
       }
     });
@@ -1267,41 +1417,37 @@
       const row = document.createElement('div');
       row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: var(--deep); border: 0.5px solid var(--border); padding: 8px 12px; border-radius: 6px;';
       
-      const isUsed = cat.usedCount > 0;
-      const usedBadge = isUsed ? `<span style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; margin-left: 8px;">Digunakan (${cat.usedCount})</span>` : '';
-
       row.innerHTML = `
         <div style="display: flex; align-items: center;">
           <span style="font-size: 12px; color: var(--white); font-weight: 500;">${cat.name}</span>
-          ${usedBadge}
         </div>
         <div style="display: flex; gap: 6px;">
           <button type="button" class="action-btn" onclick="editCategoryName(${index})" style="padding: 3px 8px; font-size: 9px;">Edit</button>
-          ${isUsed ? 
-            `<button type="button" class="action-btn" onclick="showLuxuryModal({ title: 'Kategori Digunakan', message: 'Kategori <strong>${cat.name}</strong> sedang digunakan oleh album foto aktif sehingga belum dapat dihapus.', type: 'warning' })" style="padding: 3px 8px; font-size: 9px; opacity: 0.5;">Hapus</button>` :
-            `<button type="button" class="action-btn delete" onclick="deleteCategoryItem(${index})" style="padding: 3px 8px; font-size: 9px;">Hapus</button>`
-          }
+          <button type="button" class="action-btn delete" onclick="deleteCategoryItem(${index})" style="padding: 3px 8px; font-size: 9px;">Hapus</button>
         </div>
       `;
       container.appendChild(row);
     });
   }
 
-  function addNewCategory() {
+  async function addNewCategory() {
     const input = document.getElementById('newCategoryInput');
     const val = input.value.trim();
     if (!val) {
       showToast('Nama kategori tidak boleh kosong', 'error');
       return;
     }
-    const id = val.toLowerCase().replace(/\s+/g, '-');
-    if (categoriesList.some(c => c.id === id || c.name.toLowerCase() === val.toLowerCase())) {
+    const slug = val.toLowerCase().replace(/\s+/g, '-');
+    if (categoriesList.some(c => c.slug === slug || c.name.toLowerCase() === val.toLowerCase())) {
       showToast('Kategori ini sudah ada', 'warning');
       return;
     }
-    categoriesList.push({ id, name: val, usedCount: 0 });
+
+    if (window.CategoryService && typeof CategoryService.createCategory === 'function') {
+      await CategoryService.createCategory(val);
+    }
     input.value = '';
-    renderCategoryDropdowns();
+    await loadCategoriesListFromDB();
     renderCategoryListUI();
     showToast(`Kategori "${val}" berhasil ditambahkan!`, 'success');
   }
@@ -1313,11 +1459,13 @@
       message: `Masukkan nama baru untuk kategori <strong>${cat.name}</strong>:`,
       type: 'info',
       confirmText: 'Simpan',
-      onConfirm: () => {
+      onConfirm: async () => {
         const inputName = prompt('Nama baru kategori:', cat.name);
         if (inputName && inputName.trim()) {
-          cat.name = inputName.trim();
-          renderCategoryDropdowns();
+          if (window.CategoryService && typeof CategoryService.updateCategory === 'function') {
+            await CategoryService.updateCategory(cat.id, inputName.trim());
+          }
+          await loadCategoriesListFromDB();
           renderCategoryListUI();
           showToast('Nama kategori berhasil diperbarui!', 'success');
         }
@@ -1327,32 +1475,27 @@
 
   function deleteCategoryItem(index) {
     const cat = categoriesList[index];
-    if (cat.usedCount > 0) {
-      showLuxuryModal({
-        title: 'Kategori Digunakan',
-        message: `Kategori <strong>${cat.name}</strong> sedang digunakan oleh album foto sehingga tidak dapat dihapus.`,
-        type: 'warning'
-      });
-      return;
-    }
     showLuxuryModal({
       title: 'Hapus Kategori',
-      message: `Apakah Anda yakin ingin menghapus kategori <strong>${cat.name}</strong>?`,
+      message: `Apakah Anda yakin ingin menghapus kategori <strong>${cat.name}</strong> dari database?`,
       type: 'danger',
       confirmText: 'Hapus',
       cancelText: 'Batal',
-      onConfirm: () => {
-        categoriesList.splice(index, 1);
-        renderCategoryDropdowns();
+      onConfirm: async () => {
+        if (window.CategoryService && typeof CategoryService.deleteCategory === 'function') {
+          await CategoryService.deleteCategory(cat.id);
+        }
+        await loadCategoriesListFromDB();
         renderCategoryListUI();
         showToast('Kategori berhasil dihapus', 'success');
       }
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    renderCategoryDropdowns();
-    renderDriveExplorerUI();
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadCategoriesListFromDB();
+    await loadGalleryAlbumsList();
+    loadDriveSubfoldersList();
     renderUserListUI();
     renderLoginLogsUI();
 
@@ -1372,332 +1515,383 @@
     }
   });
 
-  // In-App Google Drive File Explorer Data & Functions
-  let currentExplorerAccount = 'drive.wisuda.smapsi@gmail.com';
-  let driveDataStore = {
-    'drive.wisuda.smapsi@gmail.com': {
-      accountName: 'Wisuda',
-      folders: [
-        { id: 'f1', name: 'Haflah Akhirussanah 2026', itemsCount: 248, date: '14 Mei 2026' },
-        { id: 'f2', name: 'Gladi Bersih Haflah', itemsCount: 64, date: '12 Mei 2026' },
-        { id: 'f3', name: 'Foto Studio Kelompok', itemsCount: 92, date: '15 Mei 2026' },
-        { id: 'f4', name: 'Pentas Seni Perpisahan', itemsCount: 110, date: '14 Mei 2026' }
-      ],
-      files: [
-        { id: 'img1', name: 'haflah-prosesi-01.jpg', size: '2.4 MB', img: '../assets/haflah1.JPG' },
-        { id: 'img2', name: 'haflah-juara-umum.jpg', size: '3.1 MB', img: '../assets/haflah3.JPG' },
-        { id: 'img3', name: 'haflah-kelas12-ipa.jpg', size: '2.8 MB', img: '../assets/haflah2.JPG' }
-      ]
-    },
-    'drive.osis.smapsi@gmail.com': {
-      accountName: 'OSIS',
-      folders: [
-        { id: 'f5', name: 'Pelantikan OSIS 2024', itemsCount: 64, date: '20 Feb 2024' },
-        { id: 'f6', name: 'Rapat Kerja Pengurus', itemsCount: 32, date: '10 Feb 2024' },
-        { id: 'f7', name: 'Pentas Seni (Pensi)', itemsCount: 178, date: '11 Nov 2023' }
-      ],
-      files: [
-        { id: 'img4', name: 'osis-pelantikan-01.jpg', size: '1.8 MB', img: '../assets/heroimages-osis.jpg' },
-        { id: 'img5', name: 'osis-rapat-kerja.jpg', size: '2.1 MB', img: '../assets/heroimages-perpus.jpg' },
-        { id: 'img6', name: 'osis-pensi-stage.jpg', size: '3.4 MB', img: '../assets/heroimages-tari.jpg' }
-      ]
-    },
-    'drive.olahraga.smapsi@gmail.com': {
-      accountName: 'Olahraga',
-      folders: [
-        { id: 'f8', name: 'Turnamen Futsal Cup 2024', itemsCount: 92, date: '05 Apr 2024' },
-        { id: 'f9', name: 'Lomba Basket Inter-School', itemsCount: 45, date: '18 Mar 2024' }
-      ],
-      files: [
-        { id: 'img6', name: 'futsal-final-juara.jpg', size: '2.0 MB', img: '../assets/heroimages-labipa.jpg' }
-      ]
-    }
-  };
+  // ══════════════════════════════════════════════════════════════════════════
+  // GOOGLE DRIVE MASTER 5TB SUBFOLDER MANAGER
+  // ══════════════════════════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════════
+  // GOOGLE DRIVE MASTER 5TB: 2-LEVEL CATEGORY & ALBUM SUBFOLDER MANAGER
+  // ══════════════════════════════════════════════════════════════════════════
+  let currentDriveCategoryFilter = 'all';
+  let cachedDriveTree = [];
 
-  function switchDriveExplorerAccount(email) {
-    currentExplorerAccount = email;
-    const label = document.getElementById('currentAccountLabel');
-    if (label) label.textContent = email;
-    renderDriveExplorerUI();
+  async function loadDriveSubfoldersList() {
+    const container = document.getElementById('adminSubfoldersGrid');
+    if (!container) return;
+
+    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 36px 16px; color: var(--muted1); font-size: 11.5px; font-family: var(--mono);">⏳ Menghubungkan ke Google Drive API & memuat struktur kategori/album...</div>`;
+
+    if (window.GoogleDriveService && typeof GoogleDriveService.getCategoryAndAlbumTree === 'function') {
+      cachedDriveTree = await GoogleDriveService.getCategoryAndAlbumTree();
+    } else {
+      cachedDriveTree = [];
+    }
+
+    renderDriveCategoryTabsUI();
+    renderDriveAlbumCardsUI();
   }
 
-  function renderDriveExplorerUI() {
-    const data = driveDataStore[currentExplorerAccount] || {
-      accountName: 'Akun Drive',
-      folders: [
-        { id: 'f_default', name: 'Folder Utama', itemsCount: 12, date: 'Hari ini' }
-      ],
-      files: [
-        { id: 'img_def', name: 'foto-sampel.jpg', size: '1.5 MB', img: '../assets/haflah1.JPG' }
-      ]
+  function renderDriveCategoryTabsUI() {
+    const tabsContainer = document.getElementById('driveCategoryTabs');
+    if (!tabsContainer) return;
+
+    tabsContainer.innerHTML = '';
+
+    // "Semua Kategori" tab button
+    const allBtn = document.createElement('button');
+    allBtn.type = 'button';
+    allBtn.className = 'filter-btn ' + (currentDriveCategoryFilter === 'all' ? 'active' : '');
+    allBtn.textContent = 'Semua Kategori';
+    allBtn.onclick = () => {
+      currentDriveCategoryFilter = 'all';
+      renderDriveCategoryTabsUI();
+      renderDriveAlbumCardsUI();
     };
+    tabsContainer.appendChild(allBtn);
 
-    // Render Folder Count & Folders Grid
-    const folderCountBadge = document.getElementById('folderCountBadge');
-    if (folderCountBadge) folderCountBadge.textContent = `${data.folders.length} Folder`;
+    // Dynamic category tabs
+    (cachedDriveTree || []).forEach(cat => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'filter-btn ' + (currentDriveCategoryFilter === cat.categoryName ? 'active' : '');
+      btn.textContent = `📁 ${cat.categoryName} (${cat.albums.length})`;
+      btn.onclick = () => {
+        currentDriveCategoryFilter = cat.categoryName;
+        renderDriveCategoryTabsUI();
+        renderDriveAlbumCardsUI();
+      };
+      tabsContainer.appendChild(btn);
+    });
+  }
 
-    const folderGrid = document.getElementById('driveFolderGrid');
-    if (folderGrid) {
-      folderGrid.innerHTML = '';
-      data.folders.forEach((f, idx) => {
-        const card = document.createElement('div');
-        card.style.cssText = 'background: var(--deep); border: 0.5px solid var(--border); border-radius: 6px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.25s, transform 0.2s;';
-        card.onmouseenter = () => { card.style.borderColor = 'rgba(255,255,255,0.3)'; card.style.transform = 'translateY(-2px)'; };
-        card.onmouseleave = () => { card.style.borderColor = 'var(--border)'; card.style.transform = 'none'; };
+  function renderDriveAlbumCardsUI() {
+    const container = document.getElementById('adminSubfoldersGrid');
+    const badge = document.getElementById('adminSubfolderCountBadge');
+    if (!container) return;
 
-        card.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-            <span style="font-size: 20px; flex-shrink: 0;">📁</span>
-            <div style="overflow: hidden;">
-              <div style="font-size: 11.5px; color: var(--white); font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${f.name}</div>
-              <div style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2); margin-top: 2px;">${f.itemsCount} File · ${f.date}</div>
+    container.innerHTML = '';
+
+    // Flatten albums based on filter
+    let displayAlbums = [];
+    (cachedDriveTree || []).forEach(cat => {
+      if (currentDriveCategoryFilter === 'all' || currentDriveCategoryFilter === cat.categoryName) {
+        cat.albums.forEach(album => {
+          displayAlbums.push({
+            ...album,
+            categoryName: cat.categoryName,
+            categoryUrl: cat.categoryUrl
+          });
+        });
+      }
+    });
+
+    if (badge) badge.textContent = `${displayAlbums.length} Album Ditemukan`;
+
+    if (displayAlbums.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; background: var(--deep); border: 0.5px dashed var(--border); border-radius: 8px;">
+          <div style="font-size: 28px; margin-bottom: 8px;">📁</div>
+          <div style="color: var(--white); font-weight: 500; font-size: 13px;">Belum Ada Folder Album di Kategori Ini</div>
+          <p style="color: var(--muted1); font-size: 11px; margin-top: 6px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            Klik tombol <strong>"+ Buat Folder Album Baru"</strong> di atas untuk membuat folder album baru pada kategori ini.
+          </p>
+          <button type="button" onclick="openCreateAlbumFolderModal('${currentDriveCategoryFilter !== 'all' ? currentDriveCategoryFilter : 'Wisuda'}')" class="btn-primary" style="margin-top: 14px; display: inline-flex; padding: 8px 18px; font-size: 11px;">
+            + Buat Folder Album Sekarang
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    displayAlbums.forEach(album => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background: var(--deep); border: 0.5px solid var(--border2); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; transition: border-color 0.25s, transform 0.2s;';
+      card.onmouseenter = () => { card.style.borderColor = 'rgba(255,255,255,0.3)'; card.style.transform = 'translateY(-2px)'; };
+      card.onmouseleave = () => { card.style.borderColor = 'var(--border2)'; card.style.transform = 'none'; };
+
+      const escapedId = (album.id || '').replace(/'/g, "\\'");
+      const escapedTitle = (album.name || 'Folder Kegiatan').replace(/'/g, "\\'");
+      const escapedCat = (album.categoryName || 'Wisuda').replace(/'/g, "\\'");
+      const folderUrl = album.url || `https://drive.google.com/drive/folders/${album.id}?usp=sharing`;
+
+      card.innerHTML = `
+        <div>
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+            <span class="badge badge-info" style="font-size: 9px; padding: 3px 8px;">📁 ${album.categoryName}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 24px; flex-shrink: 0;">🖼️</span>
+            <div style="min-width: 0; flex: 1;">
+              <h4 style="font-size: 13px; color: var(--white); font-weight: 600; margin: 0; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${album.name}">${album.name}</h4>
+              <div style="font-family: var(--mono); font-size: 9px; color: var(--muted2); margin-top: 4px;">Folder Album Drive</div>
             </div>
           </div>
-          <div style="display: flex; gap: 4px; flex-shrink: 0;">
-            <button type="button" class="action-btn" onclick="renameDriveFolder(${idx})" style="padding: 3px 6px; font-size: 8.5px;" title="Edit Nama">✏️</button>
-            <button type="button" class="action-btn delete" onclick="deleteDriveFolder(${idx})" style="padding: 3px 6px; font-size: 8.5px;" title="Hapus Folder">🗑️</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <a href="${folderUrl}" target="_blank" class="action-btn" style="text-decoration: none; text-align: center; padding: 8px 10px; font-size: 10.5px; background: rgba(255,255,255,0.06); color: var(--white); display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 4px;">
+            <span>Buka di Drive (Upload Foto) ↗</span>
+          </a>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <button type="button" class="action-btn" onclick="navigator.clipboard.writeText('${folderUrl}'); showToast('Link folder disalin!', 'success');" style="padding: 6px 8px; font-size: 9.5px;" title="Salin Link Folder">
+              📋 Salin Link
+            </button>
+            <button type="button" class="action-btn" onclick="useDriveFolderForNewAlbum('${escapedTitle}', '${folderUrl}', '${escapedCat}')" style="padding: 6px 8px; font-size: 9.5px; color: #4ade80;" title="Jadikan Album Galeri">
+              ➕ Jadi Album
+            </button>
           </div>
-        `;
-        folderGrid.appendChild(card);
-      });
-    }
-
-    // Render File Count & Files Grid
-    const fileCountBadge = document.getElementById('fileCountBadge');
-    if (fileCountBadge) fileCountBadge.textContent = `${data.files.length} File`;
-
-    const fileGrid = document.getElementById('driveFileGrid');
-    if (fileGrid) {
-      fileGrid.innerHTML = '';
-      data.files.forEach((file, idx) => {
-        const card = document.createElement('div');
-        card.style.cssText = 'background: var(--deep); border: 0.5px solid var(--border); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.25s;';
-        card.onmouseenter = () => card.style.borderColor = 'rgba(255,255,255,0.3)';
-        card.onmouseleave = () => card.style.borderColor = 'var(--border)';
-
-        card.innerHTML = `
-          <div style="height: 100px; border-radius: 4px; background-image: url('${file.img}'); background-size: cover; background-position: center; border: 0.5px solid var(--border);"></div>
-          <div style="overflow: hidden;">
-            <div style="font-size: 11px; color: var(--white); font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${file.name}</div>
-            <div style="font-family: var(--mono); font-size: 8.5px; color: var(--muted2);">${file.size}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <button type="button" class="action-btn" onclick="openEditDriveFolderModal('${escapedId}', '${escapedTitle}', '${escapedCat}')" style="padding: 5px 8px; font-size: 9.5px;" title="Edit Nama Folder">
+              ✏️ Edit
+            </button>
+            <button type="button" class="action-btn delete" onclick="deleteDriveAlbumFolder('${escapedId}', '${escapedTitle}', '${escapedCat}')" style="padding: 5px 8px; font-size: 9.5px;" title="Hapus Folder dari Kategori">
+              🗑️ Hapus
+            </button>
           </div>
-          <div style="display: flex; gap: 4px; justify-content: flex-end;">
-            <button type="button" class="action-btn" onclick="renameDriveFile(${idx})" style="padding: 3px 6px; font-size: 8.5px;">Edit</button>
-            <button type="button" class="action-btn delete" onclick="deleteDriveFile(${idx})" style="padding: 3px 6px; font-size: 8.5px;">Hapus</button>
-          </div>
-        `;
-        fileGrid.appendChild(card);
-      });
-    }
-  }
-
-  // Add Drive Account Functions
-  function openAddDriveAccountModal() {
-    document.getElementById('newAccountEmail').value = '';
-    document.getElementById('newAccountLabel').value = '';
-    document.getElementById('newAccountFolderUrl').value = '';
-    const overlay = document.getElementById('addDriveAccountOverlay');
-    if (overlay) overlay.classList.add('active');
-  }
-
-  function closeAddDriveAccountModal() {
-    const overlay = document.getElementById('addDriveAccountOverlay');
-    if (overlay) overlay.classList.remove('active');
-  }
-
-  let totalConnectedDriveAccounts = 10;
-
-  function handleAddDriveAccount(e) {
-    e.preventDefault();
-    const email = document.getElementById('newAccountEmail').value.trim();
-    const labelName = document.getElementById('newAccountLabel').value.trim();
-
-    if (!email || !labelName) return;
-
-    totalConnectedDriveAccounts++;
-
-    // 1. Add to Data Store
-    if (!driveDataStore[email]) {
-      driveDataStore[email] = {
-        accountName: labelName,
-        folders: [
-          { id: 'f_new1', name: `Folder ${labelName}`, itemsCount: 1, date: 'Hari ini' }
-        ],
-        files: [
-          { id: 'img_new1', name: 'sampel-dokumentasi.jpg', size: '1.9 MB', img: '../assets/haflah1.JPG' }
-        ]
-      };
-    }
-
-    // 2. Add to Account Selector Select Dropdown
-    const select = document.getElementById('explorerAccountSelect');
-    if (select) {
-      const opt = document.createElement('option');
-      opt.value = email;
-      opt.textContent = `${email} (${labelName})`;
-      select.appendChild(opt);
-      select.value = email;
-      switchDriveExplorerAccount(email);
-    }
-
-    // 3. Update Storage Stats Text
-    const totalCountText = document.getElementById('totalAccountCountText');
-    const totalCountSub = document.getElementById('totalAccountCountSub');
-    const totalStorageText = document.getElementById('totalStorageGBText');
-
-    const totalGB = totalConnectedDriveAccounts * 15;
-    if (totalCountText) totalCountText.textContent = totalConnectedDriveAccounts;
-    if (totalCountSub) totalCountSub.textContent = totalConnectedDriveAccounts;
-    if (totalStorageText) totalStorageText.textContent = `${totalGB}.0 GB`;
-
-    closeAddDriveAccountModal();
-    showToast(`Akun ${email} (+15 GB) berhasil dihubungkan! Total Penyimpanan: ${totalGB} GB`, 'success');
-  }
-
-  // Create Folder Functions
-  function openCreateFolderModal() {
-    document.getElementById('newFolderNameInput').value = '';
-    const overlay = document.getElementById('createFolderOverlay');
-    if (overlay) overlay.classList.add('active');
-  }
-
-  function closeCreateFolderModal() {
-    const overlay = document.getElementById('createFolderOverlay');
-    if (overlay) overlay.classList.remove('active');
-  }
-
-  function handleCreateDriveFolder(e) {
-    e.preventDefault();
-    const name = document.getElementById('newFolderNameInput').value.trim();
-    if (!name) return;
-
-    if (!driveDataStore[currentExplorerAccount]) {
-      driveDataStore[currentExplorerAccount] = { accountName: 'Drive', folders: [], files: [] };
-    }
-    driveDataStore[currentExplorerAccount].folders.unshift({
-      id: 'f_' + Date.now(),
-      name: name,
-      itemsCount: 0,
-      date: 'Hari ini'
+        </div>
+      `;
+      container.appendChild(card);
     });
-
-    closeCreateFolderModal();
-    renderDriveExplorerUI();
-    showToast(`Folder "${name}" berhasil dibuat di Google Drive!`, 'success');
   }
 
-  // Upload Photo Functions
-  function openUploadPhotoModal() {
-    document.getElementById('uploadFileNameLabel').textContent = '';
-    document.getElementById('driveFileInput').value = '';
-    const overlay = document.getElementById('uploadPhotoOverlay');
-    if (overlay) overlay.classList.add('active');
-  }
+  function useDriveFolderForNewAlbum(folderName, folderUrl, categoryName) {
+    switchSidebarMenu('gallery');
+    const titleInput = document.querySelector('#panel-gallery input[placeholder="contoh: Wisuda Angkatan 2024"]');
+    const driveInput = document.getElementById('addAlbumDrive');
+    const categorySelect = document.getElementById('selectKategori');
+    const yearInput = document.getElementById('addAlbumYear');
 
-  function closeUploadPhotoModal() {
-    const overlay = document.getElementById('uploadPhotoOverlay');
-    if (overlay) overlay.classList.remove('active');
-  }
+    if (titleInput) titleInput.value = folderName;
+    if (driveInput) driveInput.value = folderUrl;
 
-  function updateUploadFileLabel(input) {
-    const label = document.getElementById('uploadFileNameLabel');
-    if (input.files && input.files[0]) {
-      label.textContent = `File terpilih: ${input.files[0].name}`;
+    if (yearInput && folderName) {
+      const matchedYear = folderName.match(/\b(20\d{2})\b/);
+      if (matchedYear) yearInput.value = matchedYear[1];
     }
-  }
 
-  function handleUploadDrivePhoto(e) {
-    e.preventDefault();
-    const input = document.getElementById('driveFileInput');
-    const fileName = input.files && input.files[0] ? input.files[0].name : 'foto-baru-' + Math.floor(Math.random() * 100) + '.jpg';
-
-    if (!driveDataStore[currentExplorerAccount]) {
-      driveDataStore[currentExplorerAccount] = { accountName: 'Drive', folders: [], files: [] };
-    }
-    driveDataStore[currentExplorerAccount].files.unshift({
-      id: 'img_' + Date.now(),
-      name: fileName,
-      size: '2.5 MB',
-      img: '../assets/haflah1.JPG'
-    });
-
-    closeUploadPhotoModal();
-    renderDriveExplorerUI();
-    showToast(`Foto "${fileName}" berhasil di-upload ke Google Drive!`, 'success');
-  }
-
-  // Rename & Delete Functions
-  function renameDriveFolder(index) {
-    const data = driveDataStore[currentExplorerAccount];
-    if (!data || !data.folders[index]) return;
-    const folder = data.folders[index];
-    
-    showLuxuryModal({
-      title: 'Edit Nama Folder Drive',
-      message: `Masukkan nama baru untuk folder <strong>${folder.name}</strong>:`,
-      type: 'info',
-      confirmText: 'Simpan',
-      onConfirm: () => {
-        const newName = prompt('Nama baru folder:', folder.name);
-        if (newName && newName.trim()) {
-          folder.name = newName.trim();
-          renderDriveExplorerUI();
-          showToast('Nama folder berhasil diperbarui!', 'success');
+    if (categorySelect && categoryName) {
+      for (let i = 0; i < categorySelect.options.length; i++) {
+        if (categorySelect.options[i].text.toLowerCase() === categoryName.toLowerCase() || categorySelect.options[i].value.toLowerCase() === categoryName.toLowerCase()) {
+          categorySelect.selectedIndex = i;
+          break;
         }
       }
-    });
+    }
+
+    showToast(`Data album "${folderName}" (${categoryName || ''}) telah otomatis diisikan ke Form!`, 'success');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function deleteDriveFolder(index) {
-    const data = driveDataStore[currentExplorerAccount];
-    if (!data || !data.folders[index]) return;
-    const folder = data.folders[index];
+  // ══════════════════════════════════════════════════════════════════════════
+  // DRIVE FOLDER ACTION HANDLERS (BUAT, EDIT, HAPUS, SYNC)
+  // ══════════════════════════════════════════════════════════════════════════
+  function openCreateAlbumFolderModal(defaultCategory = null) {
+    const overlay = document.getElementById('createAlbumFolderOverlay');
+    const select = document.getElementById('newFolderCategorySelect');
+    const input = document.getElementById('newAlbumFolderNameInput');
+    if (!overlay) return;
 
-    showLuxuryModal({
-      title: 'Hapus Folder Drive',
-      message: `Apakah Anda yakin ingin menghapus folder <strong>${folder.name}</strong> beserta seluruh isinya dari Google Drive?`,
-      type: 'danger',
-      confirmText: 'Hapus Folder',
-      cancelText: 'Batal',
-      onConfirm: () => {
-        data.folders.splice(index, 1);
-        renderDriveExplorerUI();
-        showToast('Folder Google Drive berhasil dihapus!', 'success');
+    if (select) {
+      select.innerHTML = '';
+      const cats = (cachedDriveTree && cachedDriveTree.length > 0) 
+        ? cachedDriveTree.map(c => c.categoryName)
+        : (typeof categoriesList !== 'undefined' && categoriesList.length > 0) ? categoriesList.map(c => c.name) : [];
+      
+      const uniqueCats = Array.from(new Set(cats.length > 0 ? cats : ['Wisuda', 'OSIS', 'Olahraga', 'Seni Budaya', 'Study Tour', 'Lomba']));
+      uniqueCats.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        if (defaultCategory && defaultCategory.toLowerCase() === c.toLowerCase()) {
+          opt.selected = true;
+        } else if (!defaultCategory && currentDriveCategoryFilter !== 'all' && currentDriveCategoryFilter.toLowerCase() === c.toLowerCase()) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    if (input) {
+      input.value = '';
+      setTimeout(() => input.focus(), 100);
+    }
+
+    overlay.classList.add('active');
+  }
+
+  function closeCreateAlbumFolderModal() {
+    const overlay = document.getElementById('createAlbumFolderOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  async function handleCreateAlbumFolderSubmit(e) {
+    e.preventDefault();
+    const select = document.getElementById('newFolderCategorySelect');
+    const input = document.getElementById('newAlbumFolderNameInput');
+    const category = select ? select.value : 'Wisuda';
+    const folderName = input ? input.value.trim() : '';
+
+    if (!folderName) {
+      showToast('Nama folder album tidak boleh kosong', 'error');
+      return;
+    }
+
+    closeCreateAlbumFolderModal();
+    showToast(`Membuat folder "${folderName}" di kategori ${category}...`, 'info');
+
+    try {
+      if (window.GoogleDriveService && typeof GoogleDriveService.createAlbumFolder === 'function') {
+        await GoogleDriveService.createAlbumFolder(category, folderName);
       }
-    });
-  }
-
-  function renameDriveFile(index) {
-    const data = driveDataStore[currentExplorerAccount];
-    if (!data || !data.files[index]) return;
-    const file = data.files[index];
-
-    const newName = prompt('Nama baru file foto:', file.name);
-    if (newName && newName.trim()) {
-      file.name = newName.trim();
-      renderDriveExplorerUI();
-      showToast('Nama file foto berhasil diperbarui!', 'success');
+      currentDriveCategoryFilter = category;
+      await loadDriveSubfoldersList();
+      showToast(`Folder "${folderName}" berhasil dibuat di kategori ${category}!`, 'success');
+    } catch (err) {
+      showToast('Gagal membuat folder: ' + err.message, 'error');
     }
   }
 
-  function deleteDriveFile(index) {
-    const data = driveDataStore[currentExplorerAccount];
-    if (!data || !data.files[index]) return;
-    const file = data.files[index];
+  function openEditDriveFolderModal(folderId, currentName, categoryName) {
+    const overlay = document.getElementById('editDriveFolderOverlay');
+    const idInput = document.getElementById('editDriveFolderId');
+    const catInput = document.getElementById('editDriveFolderCategory');
+    const catDisplay = document.getElementById('editDriveFolderCategoryDisplay');
+    const nameInput = document.getElementById('editDriveFolderNameInput');
 
-    showLuxuryModal({
-      title: 'Hapus Foto Drive',
-      message: `Apakah Anda yakin ingin menghapus foto <strong>${file.name}</strong> dari Google Drive?`,
-      type: 'danger',
-      confirmText: 'Hapus Foto',
-      cancelText: 'Batal',
-      onConfirm: () => {
-        data.files.splice(index, 1);
-        renderDriveExplorerUI();
-        showToast('Foto berhasil dihapus dari Google Drive!', 'success');
-      }
-    });
+    if (!overlay) return;
+    if (idInput) idInput.value = folderId;
+    if (catInput) catInput.value = categoryName;
+    if (catDisplay) catDisplay.value = `📁 Kategori: ${categoryName}`;
+    if (nameInput) {
+      nameInput.value = currentName;
+      setTimeout(() => nameInput.focus(), 100);
+    }
+
+    overlay.classList.add('active');
   }
+
+  function closeEditDriveFolderModal() {
+    const overlay = document.getElementById('editDriveFolderOverlay');
+    if (overlay) overlay.classList.remove('active');
+  }
+
+  async function handleEditDriveFolderSubmit(e) {
+    e.preventDefault();
+    const idInput = document.getElementById('editDriveFolderId');
+    const catInput = document.getElementById('editDriveFolderCategory');
+    const nameInput = document.getElementById('editDriveFolderNameInput');
+
+    const folderId = idInput ? idInput.value : '';
+    const category = catInput ? catInput.value : '';
+    const newName = nameInput ? nameInput.value.trim() : '';
+
+    if (!newName) {
+      showToast('Nama folder tidak boleh kosong', 'error');
+      return;
+    }
+
+    closeEditDriveFolderModal();
+    showToast(`Menyimpan perubahan nama folder...`, 'info');
+
+    try {
+      if (window.GoogleDriveService && typeof GoogleDriveService.renameAlbumFolder === 'function') {
+        await GoogleDriveService.renameAlbumFolder(folderId, newName, category);
+      }
+      await loadDriveSubfoldersList();
+      showToast('Nama folder berhasil diperbarui!', 'success');
+    } catch (err) {
+      showToast('Gagal mengedit folder: ' + err.message, 'error');
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // SISTEM KEAMANAN TINGKAT 3: TYPE-TO-CONFIRM DELETE
+  // ══════════════════════════════════════════════════════════════════════════
+  let pendingDeleteFolderData = null;
+
+  function deleteDriveAlbumFolder(folderId, folderName, categoryName) {
+    pendingDeleteFolderData = { folderId, folderName, categoryName };
+    
+    const overlay = document.getElementById('deleteDriveFolderSecurityOverlay');
+    const nameText = document.getElementById('secDeleteFolderNameText');
+    const catBadge = document.getElementById('secDeleteCategoryBadge');
+    const targetText = document.getElementById('secDeleteTargetVerificationText');
+    const input = document.getElementById('secDeleteVerificationInput');
+    const btn = document.getElementById('btnExecuteSecurityDelete');
+
+    if (!overlay) return;
+    if (nameText) nameText.textContent = `"${folderName}"`;
+    if (catBadge) catBadge.textContent = categoryName;
+    if (targetText) targetText.textContent = folderName;
+    if (input) {
+      input.value = '';
+      input.style.borderColor = 'var(--border2)';
+      setTimeout(() => input.focus(), 100);
+    }
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+    }
+
+    overlay.classList.add('active');
+  }
+
+  function closeDeleteDriveFolderSecurityModal() {
+    const overlay = document.getElementById('deleteDriveFolderSecurityOverlay');
+    if (overlay) overlay.classList.remove('active');
+    pendingDeleteFolderData = null;
+  }
+
+  function handleSecDeleteValidation() {
+    const input = document.getElementById('secDeleteVerificationInput');
+    const btn = document.getElementById('btnExecuteSecurityDelete');
+    if (!input || !btn || !pendingDeleteFolderData) return;
+
+    const typed = input.value.trim();
+    const expected = (pendingDeleteFolderData.folderName || '').trim();
+
+    if (typed.toLowerCase() === expected.toLowerCase()) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      input.style.borderColor = '#ef4444';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.35';
+      btn.style.cursor = 'not-allowed';
+      input.style.borderColor = 'var(--border2)';
+    }
+  }
+
+  async function executeSecurityDeleteAction() {
+    if (!pendingDeleteFolderData) return;
+    const { folderId, folderName, categoryName } = pendingDeleteFolderData;
+
+    closeDeleteDriveFolderSecurityModal();
+    showToast(`Menghapus folder "${folderName}" dari Google Drive...`, 'info');
+
+    try {
+      if (window.GoogleDriveService && typeof GoogleDriveService.deleteAlbumFolder === 'function') {
+        await GoogleDriveService.deleteAlbumFolder(folderId, categoryName);
+      }
+      await loadDriveSubfoldersList();
+      showToast(`Folder "${folderName}" berhasil dipindahkan ke Sampah Google Drive!`, 'success');
+    } catch (err) {
+      showToast('Gagal menghapus folder: ' + err.message, 'error');
+    }
+  }
+
+
 
   // User Management State & Pagination
   let currentUserSearchQuery = '';
@@ -1956,7 +2150,16 @@
       return;
     }
 
+    if (window.UserService && UserService.updateUser) {
+      const res = await UserService.updateUser(id, { password: newPassword });
+      if (!res.success) {
+        showToast('Gagal mereset kata sandi: ' + (res.message || 'Error'), 'error');
+        return;
+      }
+    }
+
     closeResetPasswordModal();
+    await renderUserListUI();
     showToast(`Kata sandi untuk user "${username}" berhasil diperbarui ke password baru!`, 'success');
   }
 

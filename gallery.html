@@ -9,6 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Mono:wght@300;400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/auth-service.js"></script>
+<script src="js/user-service.js"></script>
+<script src="js/category-service.js"></script>
+<script src="js/gallery-service.js"></script>
 <script src="js/popup.js"></script>
 <script src="js/profile-modal.js"></script>
 </head>
@@ -70,119 +76,16 @@
 <main style="padding: 60px 48px 100px; background: var(--black);">
   <div style="max-width: 1200px; margin: 0 auto;">
 
-    <!-- Filter Categories -->
+    <!-- Filter Categories (Populated dynamically) -->
     <div class="filter-row" style="margin-bottom: 40px;">
       <button class="filter-btn active" onclick="filterGallery('all', this)">Semua Album</button>
-      <button class="filter-btn" onclick="filterGallery('wisuda', this)">Wisuda</button>
-      <button class="filter-btn" onclick="filterGallery('osis', this)">OSIS</button>
-      <button class="filter-btn" onclick="filterGallery('olahraga', this)">Olahraga</button>
-      <button class="filter-btn" onclick="filterGallery('seni', this)">Seni Budaya</button>
-      <button class="filter-btn" onclick="filterGallery('tour', this)">Study Tour</button>
-      <button class="filter-btn" onclick="filterGallery('lomba', this)">Lomba</button>
     </div>
 
-    <!-- Album Cards Grid -->
+    <!-- Album Cards Grid (Populated dynamically from Supabase) -->
     <div class="masonry-grid" id="fullGalleryGrid">
-      
-      <!-- Album 1 -->
-      <div class="m-item" data-category="wisuda" onclick="openAlbumDetail('haflah-2026')" data-img="assets/haflah1.JPG">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">WISUDA · 2026</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Haflah Akhirussanah 2026</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">248 Foto Terorganisir</div>
-          </div>
-        </div>
+      <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted2); font-family: var(--mono); font-size: 12px;">
+        Memuat koleksi album galeri...
       </div>
-
-      <!-- Album 2 -->
-      <div class="m-item" data-category="osis" onclick="openAlbumDetail('pelantikan-osis')" data-img="assets/heroimages-osis.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">OSIS · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pelantikan OSIS 2024</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">64 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 3 -->
-      <div class="m-item" data-category="tour" onclick="openAlbumDetail('study-tour-jogja')" data-img="assets/heroimages-perpus.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">STUDY TOUR · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Study Tour Yogyakarta</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">201 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 4 -->
-      <div class="m-item" data-category="olahraga" onclick="openAlbumDetail('futsal-2024')" data-img="assets/heroimages-labipa.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">OLAHRAGA · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Turnamen Futsal Cup</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">92 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 5 -->
-      <div class="m-item" data-category="seni" onclick="openAlbumDetail('pagelaran-seni')" data-img="assets/heroimages-tari.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">SENI BUDAYA · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pagelaran Seni Akhir Tahun</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">134 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 6 -->
-      <div class="m-item" data-category="lomba" onclick="openAlbumDetail('osn-2024')" data-img="assets/haflah3.JPG">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">LOMBA · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Olimpiade Sains Nasional</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">86 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 7 -->
-      <div class="m-item" data-category="osis" onclick="openAlbumDetail('pensi-osis')" data-img="assets/heroimages-osis.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">OSIS · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Pentas Seni (Pensi) OSIS</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">178 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 8 -->
-      <div class="m-item" data-category="wisuda" onclick="openAlbumDetail('perpisahan-kelas12')" data-img="assets/haflah2.JPG">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">WISUDA · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Perpisahan Kelas XII</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">96 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Album 9 -->
-      <div class="m-item" data-category="olahraga" onclick="openAlbumDetail('class-meeting')" data-img="assets/heroimages-labipa.jpg">
-        <div class="m-item-inner">
-          <div>
-            <span class="m-item-cat">OLAHRAGA · 2024</span>
-            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">Class Meeting Semester 1</div>
-            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">113 Foto Terorganisir</div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </main>
@@ -204,26 +107,112 @@
 </footer>
 
 <script>
-  // Initialize background images
-  document.querySelectorAll('.m-item').forEach(item => {
-    const imgSrc = item.getAttribute('data-img');
-    if (imgSrc) {
-      item.style.backgroundImage = `url('${imgSrc}')`;
+  let loadedAlbums = [];
+  let currentFilter = 'all';
+
+  async function loadDynamicGallery() {
+    const grid = document.getElementById('fullGalleryGrid');
+    const filterRow = document.querySelector('.filter-row');
+    if (!grid) return;
+
+    localStorage.removeItem('local_gallery_albums');
+
+    let categories = [];
+    if (window.CategoryService && typeof CategoryService.getCategories === 'function') {
+      try {
+        categories = await CategoryService.getCategories();
+      } catch (e) {
+        console.warn('Gagal memuat kategori:', e);
+      }
     }
-  });
+
+    // Render Filter Bar Kategori Dinamis
+    if (filterRow && categories && categories.length > 0) {
+      filterRow.innerHTML = `<button class="filter-btn active" onclick="filterGallery('all', this)">Semua Album</button>`;
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn';
+        btn.textContent = cat.name;
+        const filterVal = (cat.slug || cat.id || cat.name).toLowerCase();
+        btn.onclick = function() { filterGallery(filterVal, this); };
+        filterRow.appendChild(btn);
+      });
+    }
+
+    try {
+      if (window.GalleryService && typeof GalleryService.getAlbums === 'function') {
+        loadedAlbums = await GalleryService.getAlbums();
+      } else {
+        loadedAlbums = [];
+      }
+    } catch (e) {
+      console.warn('Gagal memuat album dari database:', e);
+      loadedAlbums = [];
+    }
+
+    if (loadedAlbums && loadedAlbums.length > 0) {
+      renderGalleryGrid(loadedAlbums);
+    } else {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted1); font-family: var(--mono); font-size: 13px;">
+          Belum ada album foto yang dipublikasikan di galeri.
+        </div>
+      `;
+    }
+  }
+
+  function renderGalleryGrid(albums) {
+    const grid = document.getElementById('fullGalleryGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    albums.forEach(album => {
+      const item = document.createElement('div');
+      const catName = album.categories ? album.categories.name : (album.category || 'Wisuda');
+      const catSlug = (album.categories ? (album.categories.slug || album.categories.id) : (album.category_id || album.category || 'wisuda')).toLowerCase();
+      const year = album.year || (album.event_date ? new Date(album.event_date).getFullYear() : (album.title.match(/\b(20\d{2})\b/) ? album.title.match(/\b(20\d{2})\b/)[1] : 2026));
+      const photoCount = album.photo_count || 0;
+      const cover = album.cover_urls || album.cover_url || 'assets/haflah1.JPG';
+      const albumId = album.id || album.slug;
+
+      item.className = 'm-item';
+      item.setAttribute('data-category', catSlug);
+      item.setAttribute('data-img', cover);
+      item.style.backgroundImage = `url('${cover}')`;
+      item.onclick = () => openAlbumDetail(albumId);
+
+      item.innerHTML = `
+        <div class="m-item-inner">
+          <div>
+            <span class="m-item-cat">${catName.toUpperCase()} · ${year}</span>
+            <div class="m-item-label" style="font-size: 14px; font-weight: 500; color: var(--white); margin-top: 4px;">${album.title}</div>
+            <div style="font-size: 10px; font-family: var(--mono); color: var(--light); margin-top: 2px;">${photoCount} Foto Terorganisir</div>
+          </div>
+        </div>
+      `;
+
+      if (currentFilter !== 'all' && currentFilter !== catSlug && !catSlug.includes(currentFilter)) {
+        item.style.display = 'none';
+      }
+
+      grid.appendChild(item);
+    });
+  }
 
   function openAlbumDetail(albumId) {
     window.location.href = 'detail.html?id=' + albumId;
   }
 
   function filterGallery(category, btn) {
+    currentFilter = (category || 'all').toLowerCase();
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
 
     const items = document.querySelectorAll('.m-item');
     items.forEach(item => {
-      const cat = item.getAttribute('data-category');
-      if (category === 'all' || cat === category) {
+      const cat = (item.getAttribute('data-category') || '').toLowerCase();
+      if (currentFilter === 'all' || cat === currentFilter || cat.includes(currentFilter)) {
         item.style.display = 'block';
       } else {
         item.style.display = 'none';
@@ -231,8 +220,9 @@
     });
   }
 
-  // Session check
+  // Session check & Dynamic Load
   document.addEventListener('DOMContentLoaded', () => {
+    loadDynamicGallery();
     if (typeof updateNavbarProfileUI === 'function') {
       updateNavbarProfileUI();
     }

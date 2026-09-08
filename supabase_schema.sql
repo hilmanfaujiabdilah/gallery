@@ -30,20 +30,30 @@ CREATE TABLE IF NOT EXISTS public.albums (
     cover_urls TEXT NOT NULL,
     drive_url TEXT,
     description TEXT,
+    event_date DATE DEFAULT CURRENT_DATE,
+    year INT DEFAULT 2026,
+    is_featured BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Migrasi jika tabel albums sudah dibuat sebelumnya tanpa kolom event_date, year & is_featured
+ALTER TABLE public.albums 
+ADD COLUMN IF NOT EXISTS event_date DATE DEFAULT CURRENT_DATE,
+ADD COLUMN IF NOT EXISTS year INT DEFAULT 2026,
+ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
+
 -- Insert Data Album Sampel
-INSERT INTO public.albums (title, photo_count, cover_urls, drive_url, description) VALUES
-('Haflah Akhirussanah 2026', 248, '../assets/haflah1.JPG', 'https://drive.google.com', 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI.'),
-('Pelantikan OSIS 2024', 64, '../assets/heroimages-osis.jpg', 'https://drive.google.com', 'Upacara pengukuhan dan serah terima pengurus OSIS SMAPSI 2024.')
+INSERT INTO public.albums (title, photo_count, cover_urls, drive_url, description, event_date, year, is_featured) VALUES
+('Haflah Akhirussanah 2026', 248, '../assets/haflah1.JPG', 'https://drive.google.com', 'Dokumentasi resmi haflah akhirussanah dan wisuda angkatan 2026 SMAPSI.', '2026-05-20', 2026, true),
+('Pelantikan OSIS 2024', 64, '../assets/heroimages-osis.jpg', 'https://drive.google.com', 'Upacara pengukuhan dan serah terima pengurus OSIS SMAPSI 2024.', '2024-02-20', 2024, false)
 ON CONFLICT DO NOTHING;
 
 -- 3. TABEL PROFIL USER (Terhubung dengan Supabase Auth)
 CREATE TABLE IF NOT EXISTS public.user_profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
     display_name TEXT,
     avatar_url TEXT,
     role TEXT NOT NULL CHECK (role IN ('admin', 'guru', 'siswa')),
@@ -51,8 +61,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Pastikan kolom display_name dan avatar_url ada jika tabel sudah dibuat sebelumnya
+-- Pastikan kolom password, display_name, dan avatar_url ada jika tabel sudah dibuat sebelumnya
 ALTER TABLE public.user_profiles 
+ADD COLUMN IF NOT EXISTS password TEXT,
 ADD COLUMN IF NOT EXISTS display_name TEXT,
 ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 

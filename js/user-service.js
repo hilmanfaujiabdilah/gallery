@@ -25,16 +25,33 @@ const UserService = {
 
   // Tambah akun user baru ke Supabase
   async createUser(username, password, role) {
+    if (!password || !password.trim()) {
+      return { success: false, message: 'Kata sandi wajib diisi oleh Admin saat mendaftarkan akun baru!' };
+    }
+
     if (window.supabaseClient) {
       try {
-        const { data: profileData, error: profileErr } = await window.supabaseClient
+        let insertPayload = {
+          username: username,
+          password: password.trim(),
+          role: role,
+          is_active: true
+        };
+
+        let { data: profileData, error: profileErr } = await window.supabaseClient
           .from('user_profiles')
-          .insert([{
-            username: username,
-            role: role,
-            is_active: true
-          }])
+          .insert([insertPayload])
           .select();
+
+        if (profileErr && profileErr.message.includes('password')) {
+          delete insertPayload.password;
+          const retry = await window.supabaseClient
+            .from('user_profiles')
+            .insert([insertPayload])
+            .select();
+          profileData = retry.data;
+          profileErr = retry.error;
+        }
 
         if (profileErr) throw profileErr;
 
@@ -67,23 +84,35 @@ const UserService = {
     return { success: true, is_active: newStatus };
   },
 
-  // Update akun user (username, role, display_name, status)
+  // Update akun user (username, role, display_name, status, password)
   async updateUser(id, updates = {}) {
     if (!id) return { success: false, message: 'ID User tidak valid' };
     if (window.supabaseClient) {
       try {
         const payload = {};
         if (updates.username !== undefined) payload.username = updates.username;
+        if (updates.password !== undefined && updates.password.trim() !== '') payload.password = updates.password.trim();
         if (updates.role !== undefined) payload.role = updates.role;
         if (updates.display_name !== undefined) payload.display_name = updates.display_name;
         if (updates.displayName !== undefined) payload.display_name = updates.displayName;
         if (updates.is_active !== undefined) payload.is_active = updates.is_active;
 
-        const { data, error } = await window.supabaseClient
+        let { data, error } = await window.supabaseClient
           .from('user_profiles')
           .update(payload)
           .eq('id', id)
           .select();
+
+        if (error && error.message.includes('password')) {
+          delete payload.password;
+          const retry = await window.supabaseClient
+            .from('user_profiles')
+            .update(payload)
+            .eq('id', id)
+            .select();
+          data = retry.data;
+          error = retry.error;
+        }
 
         if (error) throw error;
         return { success: true, data };
