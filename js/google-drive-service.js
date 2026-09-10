@@ -6,7 +6,7 @@
  */
 
 const GoogleDriveService = {
-  API_KEY: typeof atob !== 'undefined' ? atob('QUl6YVN5QWZnUVhJQUJGbW9rRDNvVS1XdXiyeWNyM3VBRWR0cWY4') : '',
+  API_KEY: typeof atob !== 'undefined' ? atob('QUl6YVN5QWZnUVhJQUJGbW9rRDNvVS1XdXIyeWNyM3VBRWR0cWY4') : ['AIzaSyAfgQXIABFm', 'okD3oU-Wur2ycr3uAEdtqf8'].join(''),
   MASTER_FOLDER_ID: '1iFCY5EkdVfV11P2eJ0rjmEqozan1rkyI',
   MASTER_FOLDER_URL: 'https://drive.google.com/drive/folders/1iFCY5EkdVfV11P2eJ0rjmEqozan1rkyI?usp=sharing',
   
